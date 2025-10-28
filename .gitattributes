@@ -1,0 +1,6 @@
+# 设置换行符
+* text=auto eol=lf
+
+# 确保部署脚本可执行
+deploy.sh text eol=lf
+

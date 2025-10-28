@@ -1,0 +1,1850 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学科教学智能平台：定制化学科教学知识库，开启专业化学习新体验</title>
+    <link rel="stylesheet" href="learning-platform.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="top-navbar">
+        <div class="navbar-left">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <div class="logo-text">
+                    <div class="logo-title" id="platformTitle">学科教学智能平台</div>
+                    <div class="logo-subtitle" id="platformSubtitle">为学生打造的专业化AI学习平台</div>
+                </div>
+            </div>
+        </div>
+        <div class="navbar-right">
+            <div class="language-selector">
+                <select id="languageSelect" onchange="changeLanguage(this.value)">
+                    <option value="zh-CN">简体中文</option>
+                    <option value="zh-TW">繁體中文</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+            <div class="user-info">
+                <span class="welcome-text" data-key="welcome">欢迎，<span id="currentUser">学生</span></span>
+                <div class="user-menu">
+                    <button class="user-avatar" onclick="toggleUserMenu()">
+                        <i class="fas fa-user"></i>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="#" onclick="showSettings()">
+                            <i class="fas fa-cog"></i> <span data-key="settings">设置</span>
+                        </a>
+                        <a href="#" onclick="showLearningHistory()">
+                            <i class="fas fa-history"></i> <span data-key="learningHistory">学习记录</span>
+                        </a>
+                        <hr>
+                        <a href="#" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> <span data-key="logout">退出登录</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区域 -->
+    <main class="main-container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="nav-item active" onclick="showSection('explore')">
+                        <i class="fas fa-compass"></i>
+                        <span data-key="explore">探索</span>
+                    </li>
+                    <li class="nav-item" onclick="showSection('myTutor')">
+                        <i class="fas fa-user-graduate"></i>
+                        <span data-key="myTutor">学科专业导师</span>
+                    </li>
+                    <li class="nav-item" onclick="showSection('professionalTutor')">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        <span data-key="professionalTutor">通用问答助手</span>
+                    </li>
+                    <li class="nav-item" onclick="showSection('personalProfile')">
+                        <i class="fas fa-user-circle"></i>
+                        <span data-key="personalProfile">Padlet-学生</span>
+                    </li>
+                    <li class="nav-item" onclick="showSection('studentManagement')">
+                        <i class="fas fa-users"></i>
+                        <span data-key="studentManagement">Dashboard-教师</span>
+                    </li>
+                    <li class="nav-item" onclick="showSection('textbooks')">
+                        <i class="fas fa-book-open"></i>
+                        <span data-key="textbooks">教材</span>
+                    </li>
+                    <li class="nav-item" onclick="showSection('lessonPlans')">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span data-key="lessonPlans">教案</span>
+                    </li>
+                    <li class="nav-item" onclick="showSection('resources')">
+                        <i class="fas fa-folder"></i>
+                        <span data-key="resources">个人知识库</span>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- 内容区域 -->
+        <div class="content-area">
+            <!-- 探索页面 -->
+            <section id="explore" class="content-section active">
+                <div class="section-header">
+                    <h2><i class="fas fa-compass"></i> 探索</h2>
+                </div>
+                
+                <div class="explore-cards">
+                    <div class="explore-card" onclick="openEssayCorrection()">
+                        <div class="card-icon">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>作文批改</h3>
+                            <p>AI智能作文批改，提供详细的修改建议和评分</p>
+                        </div>
+                        <div class="card-action">
+                            <button class="btn btn-primary">开始批改</button>
+                        </div>
+                    </div>
+
+                    <div class="explore-card" onclick="openFourSchoolExam()">
+                        <div class="card-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>四校联考</h3>
+                            <p>真题演练、听读写集训、错题复盘与计时模拟</p>
+                        </div>
+                        <div class="card-action">
+                            <button class="btn btn-primary">进入训练</button>
+                        </div>
+                    </div>
+
+                    <div class="explore-card" onclick="openCreativeWriting()">
+                        <div class="card-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>创意写作</h3>
+                            <p>故事结构、人物塑造与语言表达系统训练</p>
+                        </div>
+                        <div class="card-action">
+                            <button class="btn btn-primary">开始创作</button>
+                        </div>
+                    </div>
+
+                    <div class="explore-card" onclick="openIELTSPrep()">
+                        <div class="card-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>雅思备考</h3>
+                            <p>听说读写全科备考路径与范文精读</p>
+                        </div>
+                        <div class="card-action">
+                            <button class="btn btn-primary">开始备考</button>
+                        </div>
+                    </div>
+
+                    <div class="explore-card" onclick="openLessonPlanAssistant()">
+                        <div class="card-icon">
+                            <i class="fas fa-clipboard"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>备课助手</h3>
+                            <p>AI智能备课助手，快速生成高质量教案</p>
+                        </div>
+                        <div class="card-action">
+                            <button class="btn btn-primary">开始备课</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 我的导师页面 -->
+            <section id="myTutor" class="content-section">
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <h2><i class="fas fa-user-graduate"></i> 学科专业导师</h2>
+                        <div class="chat-actions">
+                            <button class="btn btn-secondary" onclick="showChatHistory('myTutor')">
+                                <i class="fas fa-history"></i> 历史对话
+                            </button>
+                            <button class="btn btn-secondary" onclick="clearChat()">
+                                <i class="fas fa-trash"></i> 清空对话
+                            </button>
+                            <button class="btn btn-primary" onclick="newChat()">
+                                <i class="fas fa-plus"></i> 新建对话
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-messages" id="myTutorMessages">
+                        <div class="welcome-message">
+                            <div class="welcome-content">
+                                <i class="fas fa-user-graduate"></i>
+                                <h3>欢迎使用学科专业导师！</h3>
+                                <p>我是您的专属学习导师，可以为您提供个性化的学习指导和答疑服务。</p>
+                                <div class="quick-questions">
+                                    <h4>快速开始：</h4>
+                                    <div class="question-chips">
+                                        <span class="chip" onclick="askMyTutor('请帮我制定学习计划')">制定学习计划</span>
+                                        <span class="chip" onclick="askMyTutor('如何提高学习效率？')">提高学习效率</span>
+                                        <span class="chip" onclick="askMyTutor('推荐一些学习方法')">学习方法推荐</span>
+                                        <span class="chip" onclick="askMyTutor('帮我分析学习问题')">学习问题分析</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="chat-input-container">
+                        <div class="input-wrapper">
+                            <button class="attach-btn" onclick="toggleFileUpload()" title="上传文件" id="attachBtn">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <textarea id="myTutorInput" placeholder="向学科专业导师提问..." rows="1"></textarea>
+                            <button class="send-btn" onclick="sendMyTutorMessage()" id="myTutorSendBtn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 文件上传弹窗 -->
+            <div class="modal-overlay" id="fileUploadModal" style="display: none;" onclick="if(event.target === this) closeFileUploadModal()">
+                <div class="modal-content file-upload-modal">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-paperclip"></i> 上传文件</h3>
+                        <button class="close-btn" onclick="closeFileUploadModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="modal-body">
+                        <div class="upload-options">
+                            <div class="upload-tabs">
+                                <button class="upload-tab active" onclick="switchUploadTab('new')">
+                                    <i class="fas fa-upload"></i> 新上传
+                                </button>
+                                <button class="upload-tab" onclick="switchUploadTab('existing')">
+                                    <i class="fas fa-folder-open"></i> 从已有文件选择
+                                </button>
+                            </div>
+                            
+                            <!-- 新上传 -->
+                            <div class="upload-content" id="newUpload">
+                                <div class="file-drop-zone" ondragover="event.preventDefault()" ondrop="handleFileDrop(event)">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>拖拽文件到此处或点击上传</p>
+                                    <input type="file" id="myTutorFileInput" multiple accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png" style="display:none;" onchange="handleFileSelect(event)">
+                                    <button class="btn btn-secondary" onclick="document.getElementById('myTutorFileInput').click()">
+                                        <i class="fas fa-plus"></i> 选择文件
+                                    </button>
+                                </div>
+                                <div class="file-list" id="myTutorNewFileList"></div>
+                            </div>
+                            
+                            <!-- 从已有文件选择 -->
+                            <div class="upload-content" id="existingUpload" style="display: none;">
+                                <div class="file-source-tabs">
+                                    <button class="source-tab active" onclick="switchFileSource('textbooks')">
+                                        <i class="fas fa-book-open"></i> 教材
+                                    </button>
+                                    <button class="source-tab" onclick="switchFileSource('lessonPlans')">
+                                        <i class="fas fa-clipboard-list"></i> 教案
+                                    </button>
+                                    <button class="source-tab" onclick="switchFileSource('resources')">
+                                        <i class="fas fa-folder"></i> 个人知识库
+                                    </button>
+                                </div>
+                                <div class="file-grid" id="existingFilesList">
+                                    <!-- 动态加载已有文件 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <div class="selected-files-count" id="selectedFilesCount" style="flex: 1; color: #667eea; font-weight: 500;">
+                            已选择：0 个文件
+                        </div>
+                        <button class="btn btn-primary" onclick="confirmFileUpload()">
+                            <i class="fas fa-check"></i> 确认上传
+                        </button>
+                        <button class="btn btn-secondary" onclick="closeFileUploadModal()">
+                            <i class="fas fa-times"></i> 取消
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 专业导师页面 -->
+            <section id="professionalTutor" class="content-section">
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <div class="header-left">
+                            <h2><i class="fas fa-chalkboard-teacher"></i> 通用问答助手</h2>
+                            <div class="session-info" id="session-info" style="display: none;">
+                                <span class="session-title" id="session-title">新对话</span>
+                                <span class="session-time" id="session-time"></span>
+                            </div>
+                        </div>
+                        <div class="chat-actions">
+                            <div class="model-switcher" style="display:flex;align-items:center;gap:8px;margin-right:12px;">
+                                <span>当前模型：</span>
+                                <strong id="currentModel">deepseek</strong>
+                                <select id="modelSelect" class="select" style="min-width:120px;">
+                                    <option value="deepseek" selected>deepseek</option>
+                                    <option value="kimi">kimi</option>
+                                    <option value="chatgpt">chatgpt</option>
+                                    <option value="doubao">豆包</option>
+                                </select>
+                                <button class="btn btn-primary" id="applyModelBtn">切换模型</button>
+                            </div>
+                            <button class="btn btn-secondary" onclick="showChatHistory('professionalTutor')">
+                                <i class="fas fa-history"></i> 历史对话
+                            </button>
+                            <button class="btn btn-secondary" onclick="clearProfessionalTutorChat()">
+                                <i class="fas fa-trash"></i> 清空对话
+                            </button>
+                            <button class="btn btn-primary" onclick="newProfessionalChat()">
+                                <i class="fas fa-plus"></i> 新建对话
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-messages" id="professionalTutorMessages">
+                        <div class="welcome-message">
+                            <div class="welcome-content">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                                <h3>欢迎使用通用问答助手！</h3>
+                                <p>我是您的专业学科导师，专注于提供深度的学科知识和专业指导。</p>
+                                
+                                <div class="quick-questions">
+                                    <h4>专业指导：</h4>
+                                    <div class="question-chips">
+                                        <span class="chip" onclick="askProfessionalTutor('请解释这个专业概念')">专业概念解释</span>
+                                        <span class="chip" onclick="askProfessionalTutor('如何进行专业研究？')">专业研究方法</span>
+                                        <span class="chip" onclick="askProfessionalTutor('推荐专业学习资源')">专业学习资源</span>
+                                        <span class="chip" onclick="askProfessionalTutor('分析专业发展趋势')">专业发展趋势</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <div class="input-wrapper">
+                            <textarea id="professionalTutorInput" placeholder="向通用问答助手提问..." rows="1"></textarea>
+                            <button class="send-btn" onclick="sendProfessionalTutorMessage()" id="professionalTutorSendBtn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 历史对话模态框 -->
+            <div id="chatHistoryModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-history"></i> 历史对话</h3>
+                        <button class="close-btn" onclick="hideChatHistory()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="historyContent">
+                            <!-- 历史对话内容将在这里显示 -->
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="hideChatHistory()">关闭</button>
+                        <button class="btn btn-danger" onclick="clearAllHistory()">清空所有历史</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 上传资源模态框 -->
+            <div id="uploadModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-upload"></i> 上传资源</h3>
+                        <button class="close-btn" onclick="hideUploadModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>选择类别</label>
+                            <select id="uploadCategory" class="select" onchange="toggleLessonPlanSubtype()">
+                                <option value="materials">教材 (materials)</option>
+                                <option value="lesson_plans">教案 (lesson_plans)</option>
+                                <option value="resources">资源 (resources)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="lessonPlanSubtypeGroup" style="display: none;">
+                            <label>教案类型</label>
+                            <select id="lessonPlanSubtype" class="select">
+                                <option value="teaching_content">教学内容设计</option>
+                                <option value="student_analysis">学情（教学目标等）</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>选择文件</label>
+                            <input id="uploadFiles" type="file" multiple />
+                        </div>
+                        <div id="uploadResult" style="font-size: 12px; color: #666;"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="hideUploadModal()">取消</button>
+                        <button class="btn btn-primary" onclick="uploadFiles()">开始上传</button>
+                    </div>
+                </div>
+            </div>
+
+            
+
+            <!-- 课程页面 -->
+            <section id="courses" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-book"></i> 课程</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-primary" onclick="uploadFile('course')">
+                            <i class="fas fa-upload"></i> 上传课程材料
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="file-management">
+                    <!-- 显示方式切换 -->
+                    <div class="view-toggle" style="display: flex; gap: 12px; padding: 20px; background: white; border-bottom: 1px solid #e5e7eb; align-items: center;">
+                        <span style="font-weight: 500; color: #374151; margin-right: 8px;">显示方式：</span>
+                        <button class="btn btn-secondary active" id="toggle-course-weekly" onclick="switchCourseView('weekly')">
+                            <i class="fas fa-calendar-week"></i> 按教学周
+                        </button>
+                        <button class="btn btn-secondary" id="toggle-course-category" onclick="switchCourseView('category')">
+                            <i class="fas fa-folder"></i> 按类型
+                        </button>
+                    </div>
+                    
+                    <!-- 按教学周视图 -->
+                    <div id="course-weekly-view" class="textbook-view active">
+                        <div class="week-navigation" style="padding: 20px; background: white; border-bottom: 1px solid #e5e7eb;">
+                            <button class="btn btn-secondary btn-sm" onclick="previousCourseWeek()">
+                                <i class="fas fa-chevron-left"></i> 上一周
+                            </button>
+                            <h3 id="current-course-week-display" style="display: inline-block; margin: 0 20px; font-size: 18px; color: #1f2937;">第1周</h3>
+                            <button class="btn btn-secondary btn-sm" onclick="nextCourseWeek()">
+                                下一周 <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <div class="week-jump" style="margin-left: 20px; display: inline-flex; align-items: center; gap: 8px;">
+                                <input type="number" id="course-week-jump-input" min="1" max="16" placeholder="周数" onkeypress="handleCourseWeekJumpKeyPress(event)" style="width: 60px; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                                <button class="btn btn-primary btn-sm" onclick="jumpToCourseWeek()" style="padding: 8px 16px;">
+                                    <i class="fas fa-arrow-right"></i> 跳转
+                                </button>
+                            </div>
+                        </div>
+                        <div id="course-weekly-content" class="file-list-content">
+                            <div class="file-list">
+                                <div class="file-list-header">
+                                    <div class="file-name">文件名</div>
+                                    <div class="file-type">类型</div>
+                                    <div class="file-size">大小</div>
+                                    <div class="file-date">上传时间</div>
+                                    <div class="file-actions-header">操作</div>
+                                </div>
+                                
+                                <div class="file-list-item">
+                                    <div class="file-name">
+                                        <div class="file-details">
+                                            <h4>高中英语教材（必修一）</h4>
+                                            <div class="file-tags">
+                                                <span class="tag">教材</span>
+                                                <span class="tag">英语</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="file-type">PDF</div>
+                                    <div class="file-size">2.5MB</div>
+                                    <div class="file-date">2024-01-15</div>
+                                    <div class="file-actions">
+                                        <button class="btn btn-primary btn-sm" title="查看">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-secondary btn-sm" title="下载">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" title="删除">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="file-list-item">
+                                    <div class="file-name">
+                                        <div class="file-details">
+                                            <h4>Unit 1 教学计划</h4>
+                                            <div class="file-tags">
+                                                <span class="tag">教案</span>
+                                                <span class="tag">第一章</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="file-type">DOCX</div>
+                                    <div class="file-size">156KB</div>
+                                    <div class="file-date">2024-01-20</div>
+                                    <div class="file-actions">
+                                        <button class="btn btn-primary btn-sm" title="查看">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-secondary btn-sm" title="下载">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" title="删除">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 按类型视图 -->
+                    <div id="course-category-view" class="textbook-view" style="display: none;">
+                        <div class="file-filters" style="padding: 20px; background: white; border-bottom: 1px solid #e5e7eb;">
+                            <button class="btn btn-secondary active" onclick="filterCourseFiles('all')">全部</button>
+                            <button class="btn btn-secondary" onclick="filterCourseFiles('textbook')">教材</button>
+                            <button class="btn btn-secondary" onclick="filterCourseFiles('lessonPlan')">教案</button>
+                            <button class="btn btn-secondary" onclick="filterCourseFiles('resource')">资源</button>
+                        </div>
+                        <div id="course-category-content" class="file-list-content">
+                            <div class="file-list">
+                                <div class="file-list-header">
+                                    <div class="file-name">文件名</div>
+                                    <div class="file-type">类型</div>
+                                    <div class="file-size">大小</div>
+                                    <div class="file-date">上传时间</div>
+                                    <div class="file-actions-header">操作</div>
+                                </div>
+                                
+                                <div class="file-list-item">
+                                    <div class="file-name">
+                                        <div class="file-details">
+                                            <h4>高中英语教材（必修一）</h4>
+                                            <div class="file-tags">
+                                                <span class="tag">教材</span>
+                                                <span class="tag">英语</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="file-type">PDF</div>
+                                    <div class="file-size">2.5MB</div>
+                                    <div class="file-date">2024-01-15</div>
+                                    <div class="file-actions">
+                                        <button class="btn btn-primary btn-sm" title="查看">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-secondary btn-sm" title="下载">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" title="删除">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 个人档案页面 -->
+            <section id="personalProfile" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-user-circle"></i> Padlet-学生</h2>
+                </div>
+                
+                <!-- 模块化卡片布局 -->
+                <div class="explore-cards">
+                    <!-- 学习打卡日历卡片 -->
+                    <div class="explore-card" onclick="openStudyCalendar()">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>学习打卡日历</h3>
+                            <p>记录每日学习，追踪学习进度和打卡率</p>
+                            <div class="card-stats">
+                                <span><i class="fas fa-check"></i> 本月打卡 15天</span>
+                                <span><i class="fas fa-percentage"></i> 打卡率 85%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 学习日志总结卡片 -->
+                    <div class="explore-card" onclick="openLearningLog()">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>学习日志总结</h3>
+                            <p>查看学习时长、完成课程和获得成就</p>
+                            <div class="card-stats">
+                                <span><i class="fas fa-clock"></i> 本月 24小时</span>
+                                <span><i class="fas fa-book"></i> 完成 3门课程</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 课表卡片 -->
+                    <div class="explore-card" onclick="openSchedule()">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>课表管理</h3>
+                            <p>上传和管理课程表，规划学习时间</p>
+                            <div class="card-stats">
+                                <span><i class="fas fa-file"></i> 已上传课表</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 课程内容卡片 -->
+                    <div class="explore-card" onclick="openCourses()">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>课程学习</h3>
+                            <p>按学科分类查看教材和教案，支持多学科浏览</p>
+                            <div class="card-stats">
+                                <span><i class="fas fa-graduation-cap"></i> 9门学科</span>
+                                <span><i class="fas fa-calendar-week"></i> 13个教学周</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 日历详细内容（隐藏，点击后显示） -->
+                <div id="study-calendar-content" style="display: none;">
+                    <button class="btn btn-secondary" onclick="goBackToPadletModules()" style="margin-bottom: 20px;">
+                        <i class="fas fa-arrow-left"></i> 返回
+                    </button>
+                    <div class="profile-layout">
+                        <div class="profile-left">
+                            <div class="calendar-container">
+                                <h3><i class="fas fa-calendar-check"></i> 学习打卡日历</h3>
+                                <div class="calendar">
+                                    <div class="calendar-header">
+                                        <button class="btn btn-secondary btn-sm" onclick="previousMonth()">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </button>
+                                        <h4 id="currentMonth">2024年1月</h4>
+                                        <button class="btn btn-secondary btn-sm" onclick="nextMonth()">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                    <div class="calendar-grid" id="calendarGrid"></div>
+                                </div>
+                                <div class="calendar-stats">
+                                    <div class="stat-item">
+                                        <span class="stat-number">15</span>
+                                        <span class="stat-label">本月打卡天数</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-number">85%</span>
+                                        <span class="stat-label">打卡率</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 学习日志详细内容（隐藏，点击后显示） -->
+                <div id="learning-log-content" style="display: none;">
+                    <button class="btn btn-secondary" onclick="goBackToPadletModules()" style="margin-bottom: 20px;">
+                        <i class="fas fa-arrow-left"></i> 返回
+                    </button>
+                    <div class="profile-right">
+                        <div class="learning-log">
+                            <h3><i class="fas fa-book-open"></i> 学习日志总结</h3>
+                            <div class="log-summary">
+                                <div class="summary-card">
+                                    <div class="summary-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="summary-content">
+                                        <h4>学习时长</h4>
+                                        <p class="summary-number">24小时</p>
+                                        <p class="summary-period">本月</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="summary-card">
+                                    <div class="summary-icon">
+                                        <i class="fas fa-book"></i>
+                                    </div>
+                                    <div class="summary-content">
+                                        <h4>完成课程</h4>
+                                        <p class="summary-number">3门</p>
+                                        <p class="summary-period">本学期</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="summary-card">
+                                    <div class="summary-icon">
+                                        <i class="fas fa-trophy"></i>
+                                    </div>
+                                    <div class="summary-content">
+                                        <h4>获得成就</h4>
+                                        <p class="summary-number">8个</p>
+                                        <p class="summary-period">累计</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="recent-logs">
+                                <h4>最近学习记录</h4>
+                                <div class="log-list">
+                                    <div class="log-item">
+                                        <div class="log-date">今天</div>
+                                        <div class="log-content">
+                                            <h5>完成 Unit 3 阅读理解训练</h5>
+                                            <p>学习时长：2小时30分钟</p>
+                                        </div>
+                                        <div class="log-status completed">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="log-item">
+                                        <div class="log-date">昨天</div>
+                                        <div class="log-content">
+                                            <h5>完成语法练习题</h5>
+                                            <p>得分：7.0，反馈：语法掌握良好</p>
+                                        </div>
+                                        <div class="log-status completed">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="log-item">
+                                        <div class="log-date">1月20日</div>
+                                        <div class="log-content">
+                                            <h5>背诵高频动词短语</h5>
+                                            <p>数量：30 个，复现率：80%</p>
+                                        </div>
+                                        <div class="log-status completed">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 课表详细内容（隐藏，点击后显示） -->
+                <div id="schedule-content" style="display: none;">
+                    <button class="btn btn-secondary" onclick="goBackToPadletModules()" style="margin-bottom: 20px;">
+                        <i class="fas fa-arrow-left"></i> 返回
+                    </button>
+                    <div class="profile-right">
+                        <div class="learning-log">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h3 style="margin: 0;"><i class="fas fa-calendar"></i> 课表</h3>
+                                <div style="display: flex; justify-content: flex-end;">
+                                    <button class="btn btn-primary" onclick="uploadSchedule()">
+                                        <i class="fas fa-upload"></i> 上传课表
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="file-list-content" id="schedule-file-list">
+                                <div class="file-list">
+                                    <div class="file-list-header">
+                                        <div class="file-name">文件名</div>
+                                        <div class="file-type">类型</div>
+                                        <div class="file-size">大小</div>
+                                        <div class="file-date">上传时间</div>
+                                        <div class="file-actions-header">操作</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 课程详细内容（隐藏，点击后显示） -->
+                <div id="courses-content" style="display: none;">
+                    <button class="btn btn-secondary" onclick="goBackToPadletModules()" style="margin-bottom: 20px;">
+                        <i class="fas fa-arrow-left"></i> 返回
+                    </button>
+                    <div class="profile-full-width">
+                        <div class="learning-log">
+                            <div class="section-header-small">
+                                <h3><i class="fas fa-book"></i> 课程</h3>
+                            </div>
+                            
+                            <div class="file-management">
+                                <!-- 学科分类导航 -->
+                                <div class="subject-tabs" id="subject-tabs" style="display: flex; gap: 8px; padding: 20px; background: white; border-bottom: 1px solid #e5e7eb; flex-wrap: wrap;"></div>
+                                
+                                <!-- 当前学科的教学周导航 -->
+                                <div id="week-tabs" style="display: flex; gap: 8px; padding: 20px; background: white; border-bottom: 1px solid #e5e7eb; flex-wrap: wrap;"></div>
+                                
+                                <!-- 课程文件列表 -->
+                                <div id="padlet-course-content" class="file-list-content">
+                                    <div class="file-list">
+                                        <div class="file-list-header">
+                                            <div class="file-name">文件名</div>
+                                            <div class="file-type">类型</div>
+                                            <div class="file-size">大小</div>
+                                            <div class="file-date">上传时间</div>
+                                            <div class="file-actions-header">操作</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 练习题库 -->
+            <section id="practice" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-dumbbell"></i> 练习题库</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-primary" onclick="startPractice()">
+                            <i class="fas fa-play"></i> 开始练习
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="practice-categories">
+                        <div class="category-card">
+                        <div class="category-icon">
+                            <i class="fas fa-headphones"></i>
+                        </div>
+                        <h3>听力题</h3>
+                        <p>校园、旅行等场景听力理解</p>
+                        <div class="question-count">120题</div>
+                    </div>
+                    
+                        <div class="category-card">
+                        <div class="category-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <h3>口语题</h3>
+                        <p>日常交流与考试口语</p>
+                        <div class="question-count">80题</div>
+                    </div>
+                    
+                        <div class="category-card">
+                        <div class="category-icon">
+                            <i class="fas fa-pen-nib"></i>
+                        </div>
+                        <h3>写作题</h3>
+                        <p>议论文、说明文与书信写作</p>
+                        <div class="question-count">150题</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 教材页面 -->
+            <section id="textbooks" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-book-open"></i> 教材</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-primary" onclick="uploadFile('textbook')">
+                            <i class="fas fa-upload"></i> 上传教材
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="file-management">
+                    <div class="file-filters">
+                        <button class="btn btn-secondary active" onclick="switchTextbookView('weekly')">
+                            <i class="fas fa-calendar-week"></i> 按教学周
+                        </button>
+                        <button class="btn btn-secondary" onclick="switchTextbookView('category')">
+                            <i class="fas fa-folder"></i> 按类型
+                        </button>
+                    </div>
+                    
+                    <!-- 按教学周视图 -->
+                    <div id="weekly-view" class="textbook-view active">
+                        <div class="week-navigation">
+                            <button class="btn btn-secondary btn-sm" onclick="previousWeek()">
+                                <i class="fas fa-chevron-left"></i> 上一周
+                            </button>
+                            <h3 id="current-week-display">第1周</h3>
+                            <button class="btn btn-secondary btn-sm" onclick="nextWeek()">
+                                下一周 <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <div class="week-jump">
+                                <input type="number" id="week-jump-input" min="1" max="16" placeholder="周数" onkeypress="handleWeekJumpKeyPress(event)">
+                                <button class="btn btn-primary btn-sm" onclick="jumpToWeek()">
+                                    <i class="fas fa-arrow-right"></i> 跳转
+                                </button>
+                            </div>
+                        </div>
+                        <div id="weekly-content" class="file-list-content">
+                            <div class="file-list">
+                                <div class="file-list-header">
+                                    <div class="file-name">文件名</div>
+                                    <div class="file-type">类型</div>
+                                    <div class="file-size">大小</div>
+                                    <div class="file-date">上传时间</div>
+                                    <div class="file-actions-header">操作</div>
+                                </div>
+                                <!-- 周内容将通过JavaScript动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 按类型视图 -->
+                    <div id="category-view" class="textbook-view">
+                        <div class="file-filters">
+                            <button class="btn btn-secondary active" onclick="filterFiles('all')">全部</button>
+                            <button class="btn btn-secondary" onclick="filterFiles('pdf')">PDF</button>
+                            <button class="btn btn-secondary" onclick="filterFiles('doc')">文档</button>
+                            <button class="btn btn-secondary" onclick="filterFiles('image')">图片</button>
+                        </div>
+                        <div id="category-content" class="file-list-content">
+                            <div class="file-list">
+                                <div class="file-list-header">
+                                    <div class="file-name">文件名</div>
+                                    <div class="file-type">类型</div>
+                                    <div class="file-size">大小</div>
+                                    <div class="file-date">上传时间</div>
+                                    <div class="file-actions-header">操作</div>
+                                </div>
+                                <!-- 类型内容将通过JavaScript动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 教案页面 -->
+            <section id="lessonPlans" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-clipboard-list"></i> 教案</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-primary" onclick="uploadFile('lessonPlan')">
+                            <i class="fas fa-upload"></i> 上传教案
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="file-management">
+                    <!-- 显示方式切换 -->
+                    <div class="view-toggle" style="display: flex; gap: 12px; padding: 20px; background: white; border-bottom: 1px solid #e5e7eb; align-items: center;">
+                        <span style="font-weight: 500; color: #374151; margin-right: 8px;">显示方式：</span>
+                        <button class="btn btn-secondary active" id="toggle-lesson-plan-weekly" onclick="switchLessonPlanView('weekly')">
+                            <i class="fas fa-calendar-week"></i> 按教学周
+                        </button>
+                        <button class="btn btn-secondary" id="toggle-lesson-plan-category" onclick="switchLessonPlanView('category')">
+                            <i class="fas fa-folder"></i> 按类型
+                        </button>
+                    </div>
+                    
+                    <!-- 按教学周视图 -->
+                    <div id="lesson-plan-weekly-view" class="textbook-view active">
+                        <div class="week-navigation" style="padding: 20px; background: white; border-bottom: 1px solid #e5e7eb;">
+                            <button class="btn btn-secondary btn-sm" onclick="previousLessonPlanWeek()">
+                                <i class="fas fa-chevron-left"></i> 上一周
+                            </button>
+                            <h3 id="current-lesson-plan-week-display" style="display: inline-block; margin: 0 20px; font-size: 18px; color: #1f2937;">第1周</h3>
+                            <button class="btn btn-secondary btn-sm" onclick="nextLessonPlanWeek()">
+                                下一周 <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <div class="week-jump" style="margin-left: 20px; display: inline-flex; align-items: center; gap: 8px;">
+                                <input type="number" id="lesson-plan-week-jump-input" min="1" max="16" placeholder="周数" onkeypress="handleLessonPlanWeekJumpKeyPress(event)" style="width: 60px; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                                <button class="btn btn-primary btn-sm" onclick="jumpToLessonPlanWeek()" style="padding: 8px 16px;">
+                                    <i class="fas fa-arrow-right"></i> 跳转
+                                </button>
+                            </div>
+                        </div>
+                        <div id="lesson-plan-weekly-content" class="file-list-content">
+                            <!-- 内容将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 按类型视图 -->
+                    <div id="lesson-plan-category-view" class="textbook-view" style="display: none;">
+                        <div class="file-filters" style="padding: 20px; background: white; border-bottom: 1px solid #e5e7eb;">
+                            <button class="btn btn-secondary active" onclick="filterLessonPlanFiles('all')">全部</button>
+                            <button class="btn btn-secondary" onclick="filterLessonPlanFiles('docx')">Word</button>
+                            <button class="btn btn-secondary" onclick="filterLessonPlanFiles('ppt')">PPT</button>
+                            <button class="btn btn-secondary" onclick="filterLessonPlanFiles('pdf')">PDF</button>
+                        </div>
+                        <div id="lesson-plan-category-content" class="file-list-content">
+                            <!-- 内容将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 学生管理页面 -->
+            <section id="studentManagement" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-users"></i> Dashboard-教师</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-primary" onclick="addStudent()">
+                            <i class="fas fa-user-plus"></i> 添加学生
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportStudentData()">
+                            <i class="fas fa-download"></i> 导出数据
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="student-management">
+                    <div class="student-filters">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="搜索学生姓名或学号..." onkeyup="searchStudents(this.value)">
+                        </div>
+                        <select onchange="filterStudentsByGrade(this.value)" style="padding: 10px 40px 10px 16px;">
+                            <option value="">全部年级</option>
+                            <option value="2021">2021级</option>
+                            <option value="2022">2022级</option>
+                            <option value="2023">2023级</option>
+                            <option value="2024">2024级</option>
+                        </select>
+                    </div>
+                    
+                    <div class="student-table-container">
+                        <table class="student-table">
+                            <thead>
+                                <tr>
+                                    <th>学号</th>
+                                    <th>姓名</th>
+                                    <th>年级</th>
+                                    <th>英语水平</th>
+                                    <th>学习进度</th>
+                                    <th>打卡天数</th>
+                                    <th>最后登录</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentTableBody">
+                                <tr>
+                                    <td>12345678</td>
+                                    <td><strong>张三</strong></td>
+                                    <td><span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 6px; font-size: 12px;">2024级</span></td>
+                                    <td><span style="background: #f0f9ff; color: #0284c7; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">B1</span></td>
+                                    <td>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 75%"></div>
+                                        </div>
+                                        <span>75%</span>
+                                    </td>
+                                    <td><strong style="color: #059669;">15天</strong></td>
+                                    <td><span style="color: #6b7280; font-size: 13px;">今天 14:30</span></td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button class="btn btn-primary btn-sm"><i class="fas fa-eye"></i> 查看</button>
+                                            <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i> 编辑</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>87654321</td>
+                                    <td><strong>李四</strong></td>
+                                    <td><span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 6px; font-size: 12px;">2023级</span></td>
+                                    <td><span style="background: #dbeafe; color: #1e40af; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">B2</span></td>
+                                    <td>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 60%"></div>
+                                        </div>
+                                        <span>60%</span>
+                                    </td>
+                                    <td><strong style="color: #059669;">12天</strong></td>
+                                    <td><span style="color: #6b7280; font-size: 13px;">昨天 16:45</span></td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button class="btn btn-primary btn-sm"><i class="fas fa-eye"></i> 查看</button>
+                                            <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i> 编辑</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>11111111</td>
+                                    <td><strong>王五</strong></td>
+                                    <td><span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 6px; font-size: 12px;">2024级</span></td>
+                                    <td><span style="background: #fef3c7; color: #d97706; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">A2</span></td>
+                                    <td>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 45%"></div>
+                                        </div>
+                                        <span>45%</span>
+                                    </td>
+                                    <td><strong style="color: #f59e0b;">8天</strong></td>
+                                    <td><span style="color: #6b7280; font-size: 13px;">2天前 09:20</span></td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button class="btn btn-primary btn-sm"><i class="fas fa-eye"></i> 查看</button>
+                                            <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i> 编辑</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="student-stats">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>总学生数</h3>
+                                <div class="stat-number">156</div>
+                                <p style="color: #6b7280; font-size: 13px; margin-top: 4px;">本学期注册</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>活跃学生</h3>
+                                <div class="stat-number">128</div>
+                                <p style="color: #6b7280; font-size: 13px; margin-top: 4px;">本月登录过</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>平均进度</h3>
+                                <div class="stat-number">68%</div>
+                                <p style="color: #6b7280; font-size: 13px; margin-top: 4px;">学习完成度</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>平均打卡</h3>
+                                <div class="stat-number">12天</div>
+                                <p style="color: #6b7280; font-size: 13px; margin-top: 4px;">本月打卡天数</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 资源页面 -->
+            <section id="resources" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-folder"></i> 个人知识库</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-primary" onclick="uploadFile('resource')">
+                            <i class="fas fa-upload"></i> 上传资源
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="file-management">
+                    <div class="file-filters">
+                        <button class="btn btn-secondary active" onclick="filterFiles('all')">全部</button>
+                        <button class="btn btn-secondary" onclick="filterFiles('video')">视频</button>
+                        <button class="btn btn-secondary" onclick="filterFiles('image')">图片</button>
+                        <button class="btn btn-secondary" onclick="filterFiles('audio')">音频</button>
+                    </div>
+                    
+                    <div class="file-list">
+                        <div class="file-list-header">
+                            <div class="file-name">文件名</div>
+                            <div class="file-type">类型</div>
+                            <div class="file-size">大小</div>
+                            <div class="file-date">上传时间</div>
+                            <div class="file-actions-header">操作</div>
+                        </div>
+                        
+                        <div class="file-list-item">
+                            <div class="file-name">
+                                <div class="file-details">
+                                    <h4>定语从句讲解视频</h4>
+                                    <div class="file-tags">
+                                        <span class="tag">视频</span>
+                                        <span class="tag">定语从句</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="file-type">MP4</div>
+                            <div class="file-size">125MB</div>
+                            <div class="file-date">2024-01-22</div>
+                            <div class="file-actions">
+                                <button class="btn btn-primary btn-sm">
+                                    播放
+                                </button>
+                                <button class="btn btn-secondary btn-sm">
+                                    下载
+                                </button>
+                                <button class="btn btn-danger btn-sm">
+                                    删除
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="file-list-item">
+                            <div class="file-name">
+                                <div class="file-details">
+                                    <h4>语音连读图解</h4>
+                                    <div class="file-tags">
+                                        <span class="tag">图片</span>
+                                        <span class="tag">语音</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="file-type">PNG</div>
+                            <div class="file-size">2.1MB</div>
+                            <div class="file-date">2024-01-19</div>
+                            <div class="file-actions">
+                                <button class="btn btn-primary btn-sm">
+                                    查看
+                                </button>
+                                <button class="btn btn-secondary btn-sm">
+                                    下载
+                                </button>
+                                <button class="btn btn-danger btn-sm">
+                                    删除
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="file-list-item">
+                            <div class="file-name">
+                                <div class="file-details">
+                                    <h4>英语听力材料</h4>
+                                    <div class="file-tags">
+                                        <span class="tag">音频</span>
+                                        <span class="tag">英语</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="file-type">MP3</div>
+                            <div class="file-size">15.6MB</div>
+                            <div class="file-date">2024-01-17</div>
+                            <div class="file-actions">
+                                <button class="btn btn-primary btn-sm">
+                                    播放
+                                </button>
+                                <button class="btn btn-secondary btn-sm">
+                                    下载
+                                </button>
+                                <button class="btn btn-danger btn-sm">
+                                    删除
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="file-list-item">
+                            <div class="file-name">
+                                <div class="file-details">
+                                    <h4>词汇练习包</h4>
+                                    <div class="file-tags">
+                                        <span class="tag">压缩包</span>
+                                        <span class="tag">词汇</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="file-type">ZIP</div>
+                            <div class="file-size">8.3MB</div>
+                            <div class="file-date">2024-01-14</div>
+                            <div class="file-actions">
+                                <button class="btn btn-primary btn-sm">
+                                    解压
+                                </button>
+                                <button class="btn btn-secondary btn-sm">
+                                    下载
+                                </button>
+                                <button class="btn btn-danger btn-sm">
+                                    删除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 学习进度 -->
+            <section id="progress" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-line"></i> 学习进度</h2>
+                </div>
+                
+                <div class="progress-overview">
+                    <div class="progress-card">
+                        <div class="progress-icon">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <div class="progress-content">
+                            <h3>学习天数</h3>
+                            <div class="progress-number">15</div>
+                            <div class="progress-label">天</div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-card">
+                        <div class="progress-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="progress-content">
+                            <h3>学习时长</h3>
+                            <div class="progress-number">24</div>
+                            <div class="progress-label">小时</div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-card">
+                        <div class="progress-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="progress-content">
+                            <h3>完成课程</h3>
+                            <div class="progress-number">3</div>
+                            <div class="progress-label">门</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 学习资源 -->
+            <section id="resources" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-folder"></i> 学习资源</h2>
+                </div>
+                
+                <div class="resources-grid">
+                    <div class="resource-card">
+                        <div class="resource-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <div class="resource-content">
+                            <h3>学习资料</h3>
+                            <p>PDF文档、课件、笔记</p>
+                            <div class="resource-count">25个文件</div>
+                        </div>
+                    </div>
+                    
+                    <div class="resource-card">
+                        <div class="resource-icon">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <div class="resource-content">
+                            <h3>视频教程</h3>
+                            <p>在线视频课程</p>
+                            <div class="resource-count">12个视频</div>
+                        </div>
+                    </div>
+                    
+                    <div class="resource-card">
+                        <div class="resource-icon">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <div class="resource-content">
+                            <h3>外部链接</h3>
+                            <p>有用的学习网站</p>
+                            <div class="resource-count">8个链接</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 作文批改页面 -->
+            <section id="essayCorrection" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-edit"></i> 作文批改</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-secondary" onclick="showCorrectionHistory()">
+                            <i class="fas fa-history"></i> 批改历史
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="essay-correction-container">
+                        <div class="correction-steps">
+                            <div class="step active" data-step="1">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h3>选择批改方式</h3>
+                                    <p>选择评分标准、AI模型或外部工具</p>
+                                </div>
+                            </div>
+                            <div class="step" data-step="2">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h3>上传作文</h3>
+                                    <p>上传学生的作文文件</p>
+                                </div>
+                            </div>
+                            <div class="step" data-step="3">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h3>开始批改</h3>
+                                    <p>AI智能批改并生成结果</p>
+                                    </div>
+                            </div>
+                        </div>
+                    
+                    <div class="correction-content">
+                        <!-- 步骤1：选择批改方式 -->
+                        <div class="step-panel active" id="step1">
+                            <div class="correction-options">
+                                <div class="options-grid">
+                                    <!-- 上传评分标准 -->
+                                    <div class="option-card" id="uploadStandardCard">
+                                        <div class="option-header">
+                                            <div class="option-icon">
+                                                <i class="fas fa-upload"></i>
+                                            </div>
+                                            <h3>上传评分标准</h3>
+                                            <p>上传自定义评分标准文件</p>
+                                        </div>
+                                        <div class="option-content">
+                                            <div class="upload-area" id="standardUploadArea">
+                                                <div class="upload-icon">
+                                                    <i class="fas fa-file-alt"></i>
+                                                </div>
+                                                <h4>上传评分标准</h4>
+                                                <p>支持 .doc, .docx, .pdf, .txt 格式</p>
+                                                <input type="file" id="standardFile" accept=".doc,.docx,.pdf,.txt" style="display: none;">
+                                                <button class="btn btn-primary" onclick="document.getElementById('standardFile').click()">
+                                                    <i class="fas fa-upload"></i> 选择文件
+                                                </button>
+                                            </div>
+                                            <div class="file-info" id="standardFileInfo" style="display: none;">
+                                                <div class="file-preview">
+                                                    <div class="file-icon">
+                                                        <i class="fas fa-file-alt"></i>
+                                                    </div>
+                                                    <div class="file-details">
+                                                        <h4 id="standardFileName"></h4>
+                                                        <p id="standardFileSize"></p>
+                                                    </div>
+                                                    <button class="btn btn-danger btn-sm" onclick="removeStandardFile()">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="option-actions" id="standardActions">
+                                                <button class="btn btn-secondary btn-sm" onclick="skipStandardUpload()">
+                                                    <i class="fas fa-forward"></i> 跳过
+                                                </button>
+                                            </div>
+                                            <div class="option-actions" id="skipActions" style="display: none;">
+                                                <button class="btn btn-primary btn-sm" onclick="cancelSkipStandard()">
+                                                    <i class="fas fa-undo"></i> 取消跳过
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 选择AI模型 -->
+                                    <div class="option-card" id="selectAICard">
+                                        <div class="option-header">
+                                            <div class="option-icon">
+                                                <i class="fas fa-robot"></i>
+                                            </div>
+                                            <h3>选择AI模型</h3>
+                                            <p>选择大语言模型进行智能批改</p>
+                                        </div>
+                                        <div class="option-content">
+                                            <div class="model-grid">
+                                                <div class="model-card" data-model="gpt-4">
+                                                    <div class="model-icon">
+                                                        <i class="fas fa-brain"></i>
+                                                    </div>
+                                                    <h4>GPT-4</h4>
+                                                    <p>最先进的通用语言模型，批改质量最高</p>
+                                                    <div class="model-features">
+                                                        <span class="feature">高精度</span>
+                                                        <span class="feature">深度分析</span>
+                                                    </div>
+                                                </div>
+                                                <div class="model-card" data-model="claude-3">
+                                                    <div class="model-icon">
+                                                        <i class="fas fa-lightbulb"></i>
+                                                    </div>
+                                                    <h4>Claude-3</h4>
+                                                    <p>擅长理解和分析，提供详细建议</p>
+                                                    <div class="model-features">
+                                                        <span class="feature">理解力强</span>
+                                                        <span class="feature">建议详细</span>
+                                                    </div>
+                                                </div>
+                                                <div class="model-card" data-model="gemini-pro">
+                                                    <div class="model-icon">
+                                                        <i class="fas fa-gem"></i>
+                                                    </div>
+                                                    <h4>Gemini Pro</h4>
+                                                    <p>平衡性能和速度，适合快速批改</p>
+                                                    <div class="model-features">
+                                                        <span class="feature">速度快</span>
+                                                        <span class="feature">性价比高</span>
+                                                    </div>
+                                                </div>
+                                                <div class="model-card" data-model="local-model">
+                                                    <div class="model-icon">
+                                                        <i class="fas fa-server"></i>
+                                                    </div>
+                                                    <h4>本地模型</h4>
+                                                    <p>本地部署，保护隐私，适合敏感内容</p>
+                                                    <div class="model-features">
+                                                        <span class="feature">隐私保护</span>
+                                                        <span class="feature">本地部署</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 选择外部工具 -->
+                                    <div class="option-card" id="selectToolsCard">
+                                        <div class="option-header">
+                                            <div class="option-icon">
+                                                <i class="fas fa-tools"></i>
+                                            </div>
+                                            <h3>选择外部工具</h3>
+                                            <p>结合专业写作工具，提供更全面的批改建议</p>
+                                        </div>
+                                        <div class="option-content">
+                                            <div class="external-tools-grid">
+                                                <div class="tool-card" data-tool="grammarly" onclick="toggleExternalToolCard('grammarly')">
+                                                    <div class="tool-icon">
+                                                        <i class="fas fa-spell-check"></i>
+                                                    </div>
+                                                    <h5>Grammarly</h5>
+                                                    <p>语法检查和写作建议</p>
+                                                    <div class="tool-features">
+                                                        <span class="feature">语法检查</span>
+                                                        <span class="feature">风格优化</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="tool-card" data-tool="linguix" onclick="toggleExternalToolCard('linguix')">
+                                                    <div class="tool-icon">
+                                                        <i class="fas fa-language"></i>
+                                                    </div>
+                                                    <h5>Linguix</h5>
+                                                    <p>智能写作助手和语法检查</p>
+                                                    <div class="tool-features">
+                                                        <span class="feature">智能建议</span>
+                                                        <span class="feature">实时检查</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="tool-card" data-tool="quillbot" onclick="toggleExternalToolCard('quillbot')">
+                                                    <div class="tool-icon">
+                                                        <i class="fas fa-edit"></i>
+                                                    </div>
+                                                    <h5>Quillbot</h5>
+                                                    <p>文本改写和优化工具</p>
+                                                    <div class="tool-features">
+                                                        <span class="feature">文本改写</span>
+                                                        <span class="feature">同义词替换</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="tool-card" data-tool="prowritingaid" onclick="toggleExternalToolCard('prowritingaid')">
+                                                    <div class="tool-icon">
+                                                        <i class="fas fa-pen-fancy"></i>
+                                                    </div>
+                                                    <h5>ProWritingAid</h5>
+                                                    <p>专业写作分析和改进</p>
+                                                    <div class="tool-features">
+                                                        <span class="feature">写作分析</span>
+                                                        <span class="feature">风格检查</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="tool-card" data-tool="hemingway" onclick="toggleExternalToolCard('hemingway')">
+                                                    <div class="tool-icon">
+                                                        <i class="fas fa-book"></i>
+                                                    </div>
+                                                    <h5>Hemingway Editor</h5>
+                                                    <p>简洁写作和可读性分析</p>
+                                                    <div class="tool-features">
+                                                        <span class="feature">可读性</span>
+                                                        <span class="feature">简洁性</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="tool-card" data-tool="whitesmoke" onclick="toggleExternalToolCard('whitesmoke')">
+                                                    <div class="tool-icon">
+                                                        <i class="fas fa-cloud"></i>
+                                                    </div>
+                                                    <h5>WhiteSmoke</h5>
+                                                    <p>多语言写作和翻译工具</p>
+                                                    <div class="tool-features">
+                                                        <span class="feature">多语言</span>
+                                                        <span class="feature">翻译</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="tools-summary" id="toolsSummary" style="display: none;">
+                                                <h5>已选择的工具：</h5>
+                                                <div class="selected-tools" id="selectedToolsList"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 步骤2：上传作文 -->
+                        <div class="step-panel" id="step2">
+                            <div class="upload-section">
+                                <div class="upload-area" id="essayUploadArea">
+                                    <div class="upload-icon">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                    </div>
+                                    <h3>上传学生作文</h3>
+                                    <p>支持 .doc, .docx, .pdf, .txt 格式</p>
+                                    <input type="file" id="essayFile" accept=".doc,.docx,.pdf,.txt" style="display: none;">
+                                    <button class="btn btn-primary" onclick="document.getElementById('essayFile').click()">
+                                        <i class="fas fa-upload"></i> 选择文件
+                                    </button>
+                                </div>
+                                <div class="file-info" id="essayFileInfo" style="display: none;">
+                                    <div class="file-preview">
+                                        <div class="file-icon">
+                                            <i class="fas fa-file-alt"></i>
+                                        </div>
+                                        <div class="file-details">
+                                            <h4 id="essayFileName"></h4>
+                                            <p id="essayFileSize"></p>
+                                        </div>
+                                        <button class="btn btn-danger btn-sm" onclick="removeEssayFile()">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 步骤3：批改结果 -->
+                        <div class="step-panel" id="step3">
+                            <div class="correction-result">
+                                <div class="result-header">
+                                    <h3>批改结果</h3>
+                                    <div class="result-actions">
+                                        <button class="btn btn-secondary" onclick="downloadResult()">
+                                            <i class="fas fa-download"></i> 下载报告
+                                        </button>
+                                        <button class="btn btn-primary" onclick="startNewCorrection()">
+                                            <i class="fas fa-plus"></i> 新建批改
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="result-content" id="correctionResult">
+                                    <!-- 批改结果将在这里显示 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="correction-actions">
+                        <button class="btn btn-secondary" id="prevBtn" onclick="previousStep()" style="display: none;">
+                            <i class="fas fa-arrow-left"></i> 上一步
+                        </button>
+                        <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">
+                            下一步 <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <button class="btn btn-success" id="startBtn" onclick="startCorrection()" style="display: none;">
+                            <i class="fas fa-play"></i> 开始批改
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 备课助手页面 -->
+            <section id="lessonPlanAssistant" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-clipboard"></i> 备课助手</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-secondary" onclick="showLessonPlanHistory()">
+                            <i class="fas fa-history"></i> 备课历史
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="lesson-plan-assistant-container">
+                    <div class="lesson-plan-form">
+                        <div class="form-group">
+                            <label for="lessonSubject">
+                                <i class="fas fa-book"></i> 科目
+                            </label>
+                            <select id="lessonSubject" class="form-control">
+                                <option value="">请选择科目</option>
+                                <option value="语文">语文</option>
+                                <option value="数学">数学</option>
+                                <option value="英语">英语</option>
+                                <option value="物理">物理</option>
+                                <option value="化学">化学</option>
+                                <option value="生物">生物</option>
+                                <option value="历史">历史</option>
+                                <option value="地理">地理</option>
+                                <option value="政治">政治</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lessonGrade">
+                                <i class="fas fa-user-graduate"></i> 年级
+                            </label>
+                            <select id="lessonGrade" class="form-control">
+                                <option value="">请选择年级</option>
+                                <option value="一年级">一年级</option>
+                                <option value="二年级">二年级</option>
+                                <option value="三年级">三年级</option>
+                                <option value="四年级">四年级</option>
+                                <option value="五年级">五年级</option>
+                                <option value="六年级">六年级</option>
+                                <option value="七年级">七年级</option>
+                                <option value="八年级">八年级</option>
+                                <option value="九年级">九年级</option>
+                                <option value="高一">高一</option>
+                                <option value="高二">高二</option>
+                                <option value="高三">高三</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lessonTopic">
+                                <i class="fas fa-pencil-alt"></i> 课题名称
+                            </label>
+                            <input type="text" id="lessonTopic" class="form-control" placeholder="例如：Unit 3 阅读理解">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lessonDuration">
+                                <i class="fas fa-clock"></i> 课时时长
+                            </label>
+                            <select id="lessonDuration" class="form-control">
+                                <option value="">请选择时长</option>
+                                <option value="35">35分钟</option>
+                                <option value="40">40分钟</option>
+                                <option value="45">45分钟</option>
+                                <option value="50">50分钟</option>
+                                <option value="90">90分钟（2课时）</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lessonTheme">
+                                <i class="fas fa-lightbulb"></i> 教学主题
+                            </label>
+                            <input type="text" id="lessonTheme" class="form-control" placeholder="例如：春天的诗歌欣赏">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lessonObjectives">
+                                <i class="fas fa-target"></i> 教学目标
+                            </label>
+                            <textarea id="lessonObjectives" class="form-control" rows="3" placeholder="请描述本节课的教学目标..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lessonType">
+                                <i class="fas fa-tasks"></i> 课程类型
+                            </label>
+                            <select id="lessonType" class="form-control">
+                                <option value="">请选择课程类型</option>
+                                <option value="新授课">新授课</option>
+                                <option value="复习课">复习课</option>
+                                <option value="练习课">练习课</option>
+                                <option value="实验课">实验课</option>
+                                <option value="活动课">活动课</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <i class="fas fa-robot"></i> AI模型选择
+                            </label>
+                            <div class="model-selection-grid">
+                                <div class="model-option" data-model="gpt-4">
+                                    <div class="model-icon">
+                                        <i class="fas fa-brain"></i>
+                                    </div>
+                                    <h4>GPT-4</h4>
+                                    <p>高质量教案生成</p>
+                                </div>
+                                <div class="model-option" data-model="claude-3">
+                                    <div class="model-icon">
+                                        <i class="fas fa-lightbulb"></i>
+                                    </div>
+                                    <h4>Claude-3</h4>
+                                    <p>详细的教学建议</p>
+                                </div>
+                                <div class="model-option" data-model="gemini-pro">
+                                    <div class="model-icon">
+                                        <i class="fas fa-gem"></i>
+                                    </div>
+                                    <h4>Gemini Pro</h4>
+                                    <p>快速生成教案</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button class="btn btn-primary" onclick="generateLessonPlan()">
+                                <i class="fas fa-magic"></i> 生成教案
+                            </button>
+                            <button class="btn btn-secondary" onclick="resetLessonPlanForm()">
+                                <i class="fas fa-redo"></i> 重置
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="lesson-plan-preview" id="lessonPlanPreview" style="display: none;">
+                        <div class="preview-header">
+                            <h3><i class="fas fa-file-alt"></i> 生成的教案</h3>
+                            <div class="preview-actions">
+                                <button class="btn btn-sm btn-success" onclick="saveLessonPlan()">
+                                    <i class="fas fa-save"></i> 保存
+                                </button>
+                                <button class="btn btn-sm btn-secondary" onclick="downloadLessonPlan()">
+                                    <i class="fas fa-download"></i> 下载
+                                </button>
+                                <button class="btn btn-sm btn-secondary" onclick="editLessonPlan()">
+                                    <i class="fas fa-edit"></i> 编辑
+                                </button>
+                            </div>
+                        </div>
+                        <div class="preview-content" id="lessonPlanContent">
+                            <!-- 教案内容将在这里显示 -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+
+
+    <script src="learning-platform.js"></script>
+</body>
+</html>

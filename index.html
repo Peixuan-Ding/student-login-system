@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生登录系统</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <div class="platform-logo">
+                    <div class="logo-circle">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                </div>
+                <h1>学科教学智能平台</h1>
+                <p class="subtitle">为学生打造的专业化AI学习平台</p>
+            </div>
+            
+            <form class="login-form" id="loginForm">
+                <div class="form-group">
+                    <label for="username"><i class="fas fa-user-circle"></i> 学号（8位数字）</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" id="username" name="username" placeholder="请输入8位数字学号" maxlength="8" required>
+                    </div>
+                    <span class="error-message" id="usernameError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password"><i class="fas fa-lock"></i> 密码（6位字母）</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-key"></i>
+                        <input type="password" id="password" name="password" placeholder="请输入6位字母密码" maxlength="6" required>
+                    </div>
+                    <span class="error-message" id="passwordError"></span>
+                </div>
+                
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i> 登录
+                </button>
+            </form>
+            
+            <div class="demo-info">
+                <h3>演示账户信息</h3>
+                <div class="demo-accounts">
+                    <div class="account-item">
+                        <span class="account-label">学号：</span>
+                        <span class="account-value" id="demoUsername">12345678</span>
+                    </div>
+                    <div class="account-item">
+                        <span class="account-label">密码：</span>
+                        <span class="account-value" id="demoPassword">abcdef</span>
+                    </div>
+                </div>
+                <button type="button" class="demo-btn" onclick="fillDemoAccount()">填入演示账户</button>
+            </div>
+            
+            <div class="login-result" id="loginResult"></div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
