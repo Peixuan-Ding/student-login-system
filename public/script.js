@@ -1,16 +1,5 @@
-// 模拟用户数据库
-const userDatabase = {
-    '12345678': 'abcdef',
-    '87654321': 'xyzabc',
-    '11111111': 'qwerty',
-    '22222222': 'asdfgh',
-    '33333333': 'zxcvbn',
-    '44444444': 'poiuyt',
-    '55555555': 'mnbvcx',
-    '66666666': 'lkjhgf',
-    '77777777': 'rewqaz',
-    '88888888': 'tyuiop'
-};
+// 用户数据库（现在从服务器加载）
+let userDatabase = {};
 
 // 生成随机6位字母密码的函数
 function generateRandomPassword() {
@@ -105,18 +94,68 @@ function fillDemoAccount() {
     }
 }
 
-// 模拟登录过程
+// 登录过程（使用API）
 function simulateLogin(username, password) {
-    return new Promise((resolve) => {
-        // 模拟网络延迟
-        setTimeout(() => {
-            if (userDatabase[username] === password) {
-                resolve({ success: true, message: `欢迎回来！学号 ${username} 登录成功！` });
+    return new Promise(async (resolve) => {
+        try {
+            // 尝试从服务器API登录
+            const apiBase = (location.origin && location.origin.startsWith('http') ? location.origin : 'http://localhost:3000');
+            const response = await fetch(`${apiBase}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ studentId: username, password: password })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success && data.user) {
+                // 保存用户完整信息和 token
+                localStorage.setItem('userProfile', JSON.stringify(data.user));
+                localStorage.setItem('authToken', data.token); // 保存 JWT token
+                resolve({ 
+                    success: true, 
+                    message: `欢迎回来！${data.user.name || '学号 ' + username} 登录成功！`,
+                    user: data.user
+                });
             } else {
-                resolve({ success: false, message: '学号或密码错误，请检查后重试' });
+                resolve({ success: false, message: data.error || '登录失败' });
             }
-        }, 1000);
+        } catch (error) {
+            console.error('登录错误:', error);
+            // 如果API失败，回退到本地数据库
+            setTimeout(() => {
+                if (userDatabase[username] === password) {
+                    resolve({ success: true, message: `欢迎回来！学号 ${username} 登录成功！` });
+                } else {
+                    resolve({ success: false, message: '学号或密码错误，请检查后重试' });
+                }
+            }, 500);
+        }
     });
+}
+
+// 加载用户数据库
+async function loadUserDatabase() {
+    try {
+        const apiBase = (location.origin && location.origin.startsWith('http') ? location.origin : 'http://localhost:3000');
+        const response = await fetch(`${apiBase}/api/users`);
+        const data = await response.json();
+        
+        if (data.users) {
+            // 转换为旧的格式用于兼容
+            data.users.forEach(user => {
+                // 这里不存储密码，但保留用户ID映射
+                userDatabase[user.studentId] = '***'; // 密码安全
+            });
+            console.log(`已加载 ${data.users.length} 个用户`);
+        }
+    } catch (error) {
+        console.error('加载用户数据库失败，使用默认账户:', error);
+        // 回退到默认账户
+        userDatabase = {
+            '12345678': 'abcdef'
+        };
+    }
 }
 
 // 处理登录表单提交
@@ -177,18 +216,25 @@ function handleLogin(event) {
 }
 
 // 页面加载完成后初始化
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // 设置实时验证
     setupRealTimeValidation();
     
     // 绑定登录表单提交事件
     document.getElementById('loginForm').addEventListener('submit', handleLogin);
     
+    // 加载用户数据库
+    await loadUserDatabase();
+    
     // 显示数据库中的第一个账号作为演示账户
     const firstAccount = Object.entries(userDatabase)[0];
-    if (firstAccount) {
+    if (firstAccount && firstAccount[1] !== '***') {
         document.getElementById('demoUsername').textContent = firstAccount[0];
         document.getElementById('demoPassword').textContent = firstAccount[1];
+    } else {
+        // 显示默认账户
+        document.getElementById('demoUsername').textContent = '12345678';
+        document.getElementById('demoPassword').textContent = 'abcdef';
     }
     
     console.log('登录系统已初始化');

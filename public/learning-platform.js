@@ -1276,12 +1276,12 @@ ${content}
         this.showProfessionalTutorTyping();
 
         try {
-            // 调用DeepSeek API
-            const response = await this.callDeepSeekAPI(message);
+            // 根据当前选择的模型调用对应的 API
+            const response = await this.callAIAPI(message, this.currentModel || 'deepseek');
             this.hideProfessionalTutorTyping();
             this.addProfessionalTutorMessage(response, 'assistant');
         } catch (error) {
-            console.error('DeepSeek API调用失败:', error);
+            console.error(`${this.currentModel} API调用失败:`, error);
             this.hideProfessionalTutorTyping();
             // 如果API调用失败，使用本地模拟回复
             const fallbackResponse = this.generateProfessionalTutorResponse(message);
@@ -1289,8 +1289,8 @@ ${content}
         }
     }
 
-    async callDeepSeekAPI(message) {
-        // 通过后端代理调用 DeepSeek（不在前端暴露密钥）
+    async callAIAPI(message, model = 'deepseek') {
+        // 通过后端代理调用 AI API（不在前端暴露密钥）
 
         // 构建多轮对话消息历史
         const messages = [
@@ -1318,15 +1318,46 @@ ${content}
         const timeoutId = setTimeout(() => controller.abort(), 300000); // 300秒超时
 
         try {
-            console.log('发送消息历史:', messages.length, '条消息');
+            console.log(`使用模型: ${model}，发送消息历史:`, messages.length, '条消息');
+            
+            // 根据模型选择 API 端点
+            const apiEndpoints = {
+                'deepseek': '/deepseek/chat',
+                'kimi': '/kimi/chat',
+                'chatgpt': '/chatgpt/chat',
+                'doubao': '/doubao/chat'
+            };
+            
+            const endpoint = apiEndpoints[model] || '/deepseek/chat';
+            
+            // 根据模型选择对应的模型名称
+            const modelNames = {
+                'deepseek': 'deepseek-chat',
+                'kimi': 'moonshot-v1-8k',
+                'chatgpt': 'gpt-3.5-turbo',
+                'doubao': 'ep-xxx'
+            };
+            
+            const modelName = modelNames[model] || 'deepseek-chat';
+            
             const base = (location.origin && location.origin.startsWith('http') ? location.origin : 'http://localhost:3000') + '/api';
-            const response = await fetch(`${base}/deepseek/chat`, {
+            
+            // 获取 JWT token（如果存在）
+            const token = localStorage.getItem('authToken');
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            
+            // 如果有 token，添加到请求头
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            const response = await fetch(`${base}${endpoint}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: headers,
                 body: JSON.stringify({
-                    model: 'deepseek-chat',
+                    model: modelName,
                     messages: messages,
                     temperature: 0.7,
                     max_tokens: 2000,
@@ -1341,7 +1372,7 @@ ${content}
                 const errorText = await response.text();
                 console.error('API响应错误:', response.status, errorText);
                 if (response.status === 401) {
-                    throw new Error('API密钥无效或已过期，请检查配置');
+                    throw new Error('API密钥无效或已过期，请在 config.json 或环境变量中配置你的 API 密钥');
                 }
                 throw new Error(`API请求失败: ${response.status} ${response.statusText}`);
             }

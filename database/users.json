@@ -1,0 +1,75 @@
+{
+  "users": [
+    {
+      "studentId": "12345678",
+      "password": "abcdef",
+      "name": "张三",
+      "grade": "三年级",
+      "email": "zhangsan@example.com",
+      "avatar": "👨‍🎓",
+      "role": "student",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "lastLogin": "2024-10-27T00:00:00.000Z",
+      "isActive": true,
+      "note": "密码将在首次登录时自动加密"
+    },
+    {
+      "studentId": "20240001",
+      "password": "student",
+      "name": "李四",
+      "grade": "四年级",
+      "email": "lisi@example.com",
+      "avatar": "👩‍🎓",
+      "role": "student",
+      "createdAt": "2024-01-15T00:00:00.000Z",
+      "lastLogin": "2024-10-26T00:00:00.000Z",
+      "isActive": true,
+      "note": "密码将在首次登录时自动加密"
+    },
+    {
+      "studentId": "20240002",
+      "password": "test123",
+      "name": "王五",
+      "grade": "五年级",
+      "email": "wangwu@example.com",
+      "avatar": "🧑‍🎓",
+      "role": "student",
+      "createdAt": "2024-02-01T00:00:00.000Z",
+      "lastLogin": "2024-10-25T00:00:00.000Z",
+      "isActive": true,
+      "note": "密码将在首次登录时自动加密"
+    },
+    {
+      "studentId": "20240003",
+      "password": "demoab",
+      "name": "赵六",
+      "grade": "六年级",
+      "email": "zhaoliu@example.com",
+      "avatar": "👨‍🎓",
+      "role": "student",
+      "createdAt": "2024-02-10T00:00:00.000Z",
+      "lastLogin": "2024-10-24T00:00:00.000Z",
+      "isActive": true,
+      "note": "密码将在首次登录时自动加密"
+    },
+    {
+      "studentId": "20240004",
+      "password": "student",
+      "name": "小红",
+      "grade": "一年级",
+      "email": "xiaohong@example.com",
+      "avatar": "👧‍🎓",
+      "role": "student",
+      "createdAt": "2024-03-01T00:00:00.000Z",
+      "lastLogin": "2024-10-23T00:00:00.000Z",
+      "isActive": true,
+      "note": "密码将在首次登录时自动加密"
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2024-10-27T00:00:00.000Z",
+    "totalUsers": 5
+  }
+}
+

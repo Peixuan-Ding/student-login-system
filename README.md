@@ -1,265 +1,170 @@
-# 学生登录系统
+# 学科教学智能平台
 
-这是一个完整的学生登录界面系统，具有美观的UI设计和完整的功能实现。
+一个现代化的 AI 辅助学习平台，整合了多种 AI 模型，为教学和学习提供智能化支持。
 
-## 功能特性
+## ✨ 主要特性
 
-### 用户界面
-- 🎨 现代化的渐变背景设计
-- 📱 响应式布局，支持移动端
-- ✨ 流畅的动画效果和交互反馈
-- 🔍 实时输入验证和错误提示
+- 🤖 **多 AI 模型支持**: DeepSeek、Kimi、ChatGPT、豆包
+- 🔐 **安全认证**: JWT token + bcrypt 密码加密
+- 📚 **教学管理**: 课程、教案、材料、资源一体化管理
+- 💡 **智能交互**: AI 对话助手，个性化学习推荐
+- 🎨 **现代 UI**: 响应式设计，优雅的用户体验
 
-### 登录验证
-- 📝 学号格式验证：必须是8位数字
-- 🔐 密码格式验证：必须是6位字母
-- ⚡ 实时输入验证，即时反馈
-- 🚫 防止无效输入提交
+## 🚀 快速开始
 
-### 演示功能
-- 🎯 内置演示账户信息
-- 🔄 随机生成6位字母密码
-- 📋 一键填入演示账户功能
-- 💡 模拟登录过程和结果反馈
+### 1. 安装依赖
 
-## 文件结构
-
-```
-├── index.html              # 学生登录页面
-├── style.css               # 登录页面样式
-├── script.js               # 登录页面逻辑
-├── learning-platform.html  # 智慧学习平台页面
-├── learning-platform.css   # 学习平台样式
-├── learning-platform.js    # 学习平台逻辑
-└── README.md               # 说明文档
-```
-
-## 使用方法
-
-### 1. 学生登录界面
-双击 `index.html` 文件即可在浏览器中打开学生登录界面。
-
-### 2. 智慧学习平台
-登录成功后会自动跳转到智慧学习平台，或直接访问 `learning-platform.html`。
-
-### 3. 本地服务器（推荐）
 ```bash
-# 使用Python启动本地服务器
-python -m http.server 8000
-
-# 或使用Node.js
-npx http-server
-
-# 然后在浏览器中访问
-http://localhost:8000
+npm install
 ```
 
-## 演示账户
+### 2. 配置 API 密钥
 
-系统内置了多个演示账户，您可以使用以下任一账户进行登录：
+复制配置文件模板：
 
-| 学号     | 密码     |
-|----------|----------|
-| 12345678 | abcdef   |
-| 87654321 | xyzabc   |
-| 11111111 | qwerty   |
-| 22222222 | asdfgh   |
-| 33333333 | zxcvbn   |
-
-**注意**：每次刷新页面时，演示账户的密码会随机生成新的6位字母组合。
-
-## 功能说明
-
-### 输入验证
-- **学号验证**：只接受8位数字，其他格式会显示错误提示
-- **密码验证**：只接受6位字母（大小写均可），其他格式会显示错误提示
-- **实时反馈**：输入时即时显示验证结果，无需等到提交
-
-### 登录流程
-1. 输入8位数字学号
-2. 输入6位字母密码
-3. 点击"登录"按钮或按Enter键
-4. 系统验证账户信息
-5. 显示登录结果（成功/失败）
-
-### 演示功能
-- 点击"填入演示账户"按钮可自动填入默认演示账户
-- 演示账户信息会实时更新显示
-- 支持多个预设账户进行测试
-
-## 技术实现
-
-### 前端技术
-- **HTML5**：语义化标签，表单验证
-- **CSS3**：Flexbox布局，渐变背景，动画效果
-- **JavaScript ES6+**：模块化代码，Promise异步处理
-
-### 核心功能
-- 正则表达式验证输入格式
-- 模拟用户数据库存储
-- 异步登录过程模拟
-- 实时DOM操作和事件处理
-
-## 智慧学习平台
-
-### 主要功能
-
-#### 🤖 AI问答助手
-- **智能对话**：类似DeepSeek的问答界面，支持自然语言交互
-- **学习指导**：提供学习建议、知识点讲解、问题解答
-- **快速提问**：预设常用问题，一键快速提问
-- **对话历史**：保存聊天记录，支持清空和新建对话
-
-#### 📚 课程中心
-- **课程管理**：展示各类学习课程
-- **进度跟踪**：实时显示学习进度
-- **课程分类**：编程、AI、数据结构等分类
-- **学习统计**：学习天数、时长、完成课程数
-
-#### 💪 练习题库
-- **分类练习**：编程题、逻辑题、数学题
-- **难度分级**：初级、中级、高级
-- **题目统计**：显示各类型题目数量
-- **练习记录**：跟踪练习进度
-
-#### 📊 学习进度
-- **学习统计**：学习天数、时长、完成课程
-- **进度可视化**：图表展示学习成果
-- **成就系统**：学习里程碑和奖励
-- **学习报告**：定期生成学习报告
-
-#### 📁 学习资源
-- **资料管理**：PDF文档、课件、笔记
-- **视频教程**：在线视频课程
-- **外部链接**：有用的学习网站
-- **资源分类**：按类型组织学习资源
-
-### 界面特色
-- **现代化设计**：类似DeepSeek的简洁美观界面
-- **响应式布局**：支持桌面和移动端
-- **流畅动画**：优雅的过渡效果和交互反馈
-- **智能搜索**：全局搜索功能
-- **用户中心**：个人资料、设置、学习记录
-
-### AI问答功能
-- **智能回复**：基于关键词匹配的智能回复系统
-- **学习主题**：涵盖编程、AI、数据结构、学习技巧等
-- **实时对话**：支持连续对话和上下文理解
-- **打字效果**：模拟真实AI对话体验
-- **建议问题**：提供常用问题建议
-
-### 使用流程
-1. **登录系统**：使用学号和密码登录
-2. **进入平台**：自动跳转到智慧学习平台
-3. **AI问答**：与AI助手进行学习对话
-4. **课程学习**：浏览和参与课程学习
-5. **练习测试**：进行各种练习和测试
-6. **进度查看**：查看学习进度和统计
-7. **资源管理**：管理和使用学习资源
-
-## 管理员功能
-
-### 浏览器控制台工具
-系统提供了管理员工具函数（在浏览器控制台中可用）：
-
-```javascript
-// 学生登录系统工具
-window.loginSystem.generateNewPassword()
-window.loginSystem.addUser('99999999', 'newpass')
-window.loginSystem.updateUserPassword('12345678', 'newpwd')
-window.loginSystem.getUserDatabase()
-
-// 智慧学习平台工具
-window.learningPlatform.askQuestion('你的问题')
-window.learningPlatform.clearChat()
-window.learningPlatform.showSection('courses')
-```
-
-## 浏览器兼容性
-
-- ✅ Chrome 60+
-- ✅ Firefox 55+
-- ✅ Safari 12+
-- ✅ Edge 79+
-- ✅ 移动端浏览器
-
-## 系统架构
-
-### 前后端分离设计
-- **前端界面**：纯HTML/CSS/JavaScript实现
-- **数据存储**：使用浏览器localStorage模拟数据库
-- **权限管理**：基于角色的访问控制
-- **数据同步**：前后端数据实时同步
-
-### 技术特点
-- **响应式设计**：支持桌面和移动端
-- **模块化架构**：功能模块独立，易于维护
-- **数据持久化**：使用localStorage保存设置和数据
-- **用户体验**：流畅的动画和交互反馈
-
-## 安全说明
-
-⚠️ **注意**：这是一个演示系统，仅用于界面展示和功能演示。在实际生产环境中，需要：
-
-- 使用HTTPS协议
-- 实现服务器端验证
-- 添加密码加密存储
-- 实现会话管理
-- 添加防暴力破解机制
-- 实现数据库连接和事务管理
-- 添加操作日志和审计功能
-
-## 自定义修改
-
-### 修改登录界面样式
-编辑 `style.css` 文件中的CSS变量和样式规则。
-
-### 修改验证规则
-- 登录界面：在 `script.js` 文件中修改 `validateStudentId()` 和 `validatePassword()` 函数
-- 学习平台：在 `learning-platform.js` 文件中修改AI回复逻辑
-
-### 添加新功能
-- 登录界面：在 `script.js` 文件中扩展功能
-- 学习平台：在 `learning-platform.js` 文件中添加新的学习功能
-
-### 自定义AI回复
-在 `learning-platform.js` 文件中的 `getAIResponses()` 方法中添加或修改AI回复内容。
-
-## 🚀 快速部署
-
-### 📖 部署文档
-
-选择最适合你的方式：
-
-1. **没有安装Git？** ⭐⭐⭐ 推荐
-   - [GITHUB_UPLOAD.md](GITHUB_UPLOAD.md) - **手动上传指南**（最简单的5分钟方法）
-
-2. **已有Git环境**
-   - [QUICK_START.md](QUICK_START.md) - 快速部署指南（推荐新手）
-   - [DEPLOY.md](DEPLOY.md) - 完整的部署选项和详细教程
-
-### 📊 技术文档
-
-- [DATA_STORAGE.md](DATA_STORAGE.md) - **后端数据存储需求**（完整的数据表和API设计）
-- [GIT_PUSH_GUIDE.md](GIT_PUSH_GUIDE.md) - **Git 推送更新指南**（自动推送部署）
-
-### ⚡ 一键部署脚本
-
-**Windows:** 双击运行 `deploy.bat` 或在命令行执行 `.\deploy.bat`
-
-> 💡 如果没有Git，脚本会自动打开手动上传指南
-
-**Linux/Mac:** 
 ```bash
-chmod +x deploy.sh
-./deploy.sh
+# Windows
+Copy-Item config.example.json config.json
+
+# Linux/Mac
+cp config.example.json config.json
 ```
 
-### 部署地址示例
-- GitHub Pages: `https://yourusername.github.io/student-login-system/`
-- Netlify: `https://your-project.netlify.app`
-- Vercel: `https://your-project.vercel.app`
+编辑 `config.json` 文件，添加你的 API 密钥：
 
-## 许可证
+```json
+{
+  "deepseek": {
+    "apiKey": "your-deepseek-api-key"
+  },
+  "kimi": {
+    "apiKey": "your-kimi-api-key"
+  },
+  "chatgpt": {
+    "apiKey": "your-chatgpt-api-key"
+  },
+  "doubao": {
+    "apiKey": "your-doubao-api-key"
+  }
+}
+```
 
-本项目仅供学习和演示使用。
+> ⚠️ **安全提醒**: `config.json` 包含敏感信息，已自动被 `.gitignore` 忽略，不会被上传到 GitHub。
+
+### 3. 启动服务器
+
+```bash
+npm start
+```
+
+### 4. 访问应用
+
+打开浏览器访问 [http://localhost:3000](http://localhost:3000)
+
+---
+
+## 📤 部署到 GitHub
+
+**当前状态**:
+- ✅ `config.json` 已被 `.gitignore` 忽略，**不会**上传敏感密钥
+- ✅ API 密钥安全，不会泄露
+- ✅ 项目可以安全推送到 GitHub
+
+**其他用户克隆项目后**:
+1. 复制 `config.example.json` 为 `config.json`
+2. 填写自己的 API 密钥
+3. 运行项目
+
+## 📖 测试账户
+
+- **学号**: `12345678`
+- **密码**: `abcdef`
+
+## 📁 项目结构
+
+```
+demo1027/
+├── server.js           # 主服务器入口
+├── package.json        # 项目依赖
+├── config.json         # API 配置
+│
+├── routes/             # API 路由
+│   ├── auth.js         # 认证
+│   ├── users.js        # 用户管理
+│   ├── content.js      # 内容管理
+│   └── ai.js           # AI 服务
+│
+├── middleware/         # 中间件
+│   ├── auth.js         # JWT 认证
+│   └── errorHandler.js # 错误处理
+│
+├── utils/              # 工具函数
+│   ├── database.js     # 数据库操作
+│   ├── config.js       # 配置管理
+│   └── aiService.js    # AI 服务
+│
+├── public/             # 前端文件
+│   ├── index.html      # 登录页
+│   ├── learning-platform.html  # 学习平台
+│   └── *.css, *.js    # 样式和脚本
+│
+├── database/           # JSON 数据库
+└── docs/               # 文档
+```
+
+## 🔌 API 端点
+
+### 认证
+- `POST /api/auth/login` - 用户登录
+
+### 用户管理
+- `GET /api/users` - 获取用户列表
+- `POST /api/users` - 添加用户
+- `PUT /api/users/:studentId` - 更新用户
+
+### AI 服务
+- `POST /api/chat` - 通用 AI 调用
+- `POST /api/deepseek/chat` - DeepSeek
+- `POST /api/kimi/chat` - Kimi
+- `POST /api/chatgpt/chat` - ChatGPT
+- `POST /api/doubao/chat` - 豆包
+
+## 🔒 安全特性
+
+- ✅ 密码 bcrypt 加密
+- ✅ JWT token 会话管理
+- ✅ 环境变量存储敏感信息
+- ✅ 输入验证（express-validator）
+- ✅ 统一错误处理
+- ✅ 避免 HTTP 自调用
+
+## 📚 文档
+
+详细文档请查看 [docs 目录](./docs/)：
+- [安装指南](./docs/INSTALL_GUIDE.md)
+- [API 文档](./docs/README.md)
+- [问题分析](./docs/DESIGN_ISSUES.md)
+- [修复说明](./docs/FIXES_APPLIED.md)
+
+## 🛠️ 技术栈
+
+- **后端**: Node.js + Express
+- **安全**: JWT + bcrypt
+- **验证**: express-validator
+- **AI**: DeepSeek / Kimi / ChatGPT / 豆包
+- **前端**: 原生 HTML/CSS/JavaScript
+- **存储**: JSON 文件
+
+## 📝 环境要求
+
+- Node.js >= 16.0.0
+- npm >= 7.0.0
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+## 📄 许可证
+
+本项目用于学习和研究目的。
+

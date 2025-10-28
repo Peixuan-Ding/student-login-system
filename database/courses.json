@@ -1,0 +1,52 @@
+{
+  "courses": [
+    {
+      "id": "course_001",
+      "title": "小学数学",
+      "description": "涵盖小学一到六年级数学知识点",
+      "grade": "all",
+      "chapters": [
+        {
+          "id": "ch_001",
+          "title": "第一章：数的认识",
+          "content": "学习自然数、整数、分数、小数等基本概念"
+        },
+        {
+          "id": "ch_002",
+          "title": "第二章：四则运算",
+          "content": "加减乘除的运算规则和技巧"
+        }
+      ],
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "course_002",
+      "title": "小学语文",
+      "description": "语文基础知识与阅读理解",
+      "grade": "all",
+      "chapters": [
+        {
+          "id": "ch_003",
+          "title": "第一章：识字与写字",
+          "content": "基础汉字的学习"
+        }
+      ],
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "course_003",
+      "title": "小学英语",
+      "description": "英语基础词汇与语法",
+      "grade": "all",
+      "chapters": [
+        {
+          "id": "ch_004",
+          "title": "第一章：字母与单词",
+          "content": "26个英文字母和基础单词学习"
+        }
+      ],
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+}
+
