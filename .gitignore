@@ -33,8 +33,7 @@ uploads/
 # 部署脚本和临时文件
 *.bat
 *.sh.bak
-deploy-*.sh
-deploy-*.ps1
+# 不忽略 deploy-on-server.sh（生产环境需要的脚本）
 
 # 文档和说明文件
 *总结.md
