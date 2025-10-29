@@ -5,8 +5,8 @@ class LearningPlatform {
         this.chatHistory = [];
         this.myTutorHistory = [];
         this.professionalTutorHistory = [];
-        this.professionalTutorSessions = []; // 新增：专业导师会话列表
-        this.currentProfessionalSession = null; // 新增：当前会话ID
+        this.professionalTutorSessions = []; // 通用问答助手会话列表
+        this.currentProfessionalSession = null; // 当前会话ID
         this.isTyping = false;
         this.currentSection = 'explore';
         this.currentMonth = new Date().getMonth();
@@ -201,7 +201,7 @@ class LearningPlatform {
             });
         }
 
-        // 专业导师输入
+        // 通用问答助手输入
         const professionalTutorInput = document.getElementById('professionalTutorInput');
         if (professionalTutorInput) {
             professionalTutorInput.addEventListener('keydown', (e) => {
@@ -679,7 +679,7 @@ ${content}
         }
     }
 
-    // 通过后端代理使用 DeepSeek，面向“我的导师”的提示词
+    // 通过后端代理使用 DeepSeek，面向"我的导师"的提示词
     async callMyTutorAPI(message) {
         // 拉取本地知识库（user_upload 下文本内容）
         const base = (location.origin && location.origin.startsWith('http') ? location.origin : 'http://localhost:3000') + '/api';
@@ -694,12 +694,20 @@ ${content}
             console.warn('获取本地知识库失败，将仅使用对话上下文');
         }
 
-        // 组装系统提示词：强制回答限定在本地知识库
-        const systemPrompt = `你是一位贴心的学习导师。你必须严格基于“本地知识库”内容回答。
-如果用户问题在本地知识库找不到相关信息，统一回答：本地知识库中没有相关内容。
+        // 检查是否有上传的文件上下文
+        const fileContext = window.uploadedFilesContext || '';
+        
+        // 组装系统提示词：强制回答限定在本地知识库和上传的文件
+        let contextPrompt = '';
+        if (fileContext) {
+            contextPrompt = `\n\n此外，用户上传了文件，文件内容如下：\n${fileContext}`;
+        }
+        
+        const systemPrompt = `你是一位贴心的学习导师。你必须严格基于"本地知识库"和用户上传的文件内容回答。
+如果用户问题在本地知识库和上传文件中找不到相关信息，统一回答：本地知识库中没有相关内容。
 禁止凭空编造或超出本地知识库范围的推测。回答应简明、结构清晰，必要时给出知识库中的引用片段。
 
-本地知识库如下：\n${knowledge}`;
+本地知识库如下：\n${knowledge}${contextPrompt}`;
 
         // 组装消息历史
         const messages = [
@@ -719,8 +727,9 @@ ${content}
                     model: 'deepseek-chat',
                     messages,
                     temperature: 0.7,
-                    max_tokens: 1500,
-                    stream: false
+                    max_tokens: 2000, // 增加token以便处理更多文件内容
+                    stream: false,
+                    fileContext: fileContext // 传递文件上下文
                 }),
                 signal: controller.signal
             });
@@ -1100,7 +1109,7 @@ ${content}
                 <div class="no-history">
                     <i class="fas fa-inbox" style="font-size: 48px; color: #9ca3af; margin-bottom: 16px;"></i>
                     <h3 style="color: #6b7280; margin-bottom: 8px;">暂无历史对话</h3>
-                    <p style="color: #9ca3af;">开始与${chatType === 'myTutor' ? '我的导师' : '专业导师'}对话后，历史记录将在这里显示</p>
+                    <p style="color: #9ca3af;">开始与${chatType === 'myTutor' ? '我的导师' : chatType === 'professionalTutor' ? '问答助手' : '专业导师'}对话后，历史记录将在这里显示</p>
                 </div>
             `;
         } else {
@@ -1213,26 +1222,53 @@ ${content}
             </div>
         ` : `
             <div class="welcome-message">
-                <div class="welcome-content">
-                    <i class="fas fa-chalkboard-teacher"></i>
-                    <h3>欢迎使用专业导师！</h3>
-                    <p>我是您的专业学科导师，专注于提供深度的学科知识和专业指导。</p>
-                    <div class="api-status" id="deepSeekStatus">
-                        <div class="status-indicator">
-                            <i class="fas fa-circle" id="statusIcon"></i>
-                            <span id="statusText">检查API状态...</span>
-                        </div>
-                        <div class="api-key-display" id="api-key-display" style="font-size: 12px; color: #666; margin-top: 5px;">
-                            当前密钥: 检查中...
-                        </div>
+                <div class="welcome-content modern-welcome">
+                    <div class="welcome-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="url(#gradient1)"/>
+                            <path d="M2 17L12 22L22 17" fill="url(#gradient2)"/>
+                            <defs>
+                                <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                                </linearGradient>
+                                <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#f093fb;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#f5576c;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
                     </div>
-                    <div class="quick-questions">
-                        <h4>专业指导：</h4>
-                        <div class="question-chips">
-                            <span class="chip" onclick="askProfessionalTutor('请解释这个专业概念')">专业概念解释</span>
-                            <span class="chip" onclick="askProfessionalTutor('如何进行专业研究？')">专业研究方法</span>
-                            <span class="chip" onclick="askProfessionalTutor('推荐专业学习资源')">专业学习资源</span>
-                            <span class="chip" onclick="askProfessionalTutor('分析专业发展趋势')">专业发展趋势</span>
+                    <h3>你好，我是 DeepSeek AI</h3>
+                    <p class="welcome-subtitle">我可以帮助你解答问题、分析数据、撰写文档，或进行任何对话</p>
+                    
+                    <div class="quick-suggestions">
+                        <h4>试试问我：</h4>
+                        <div class="suggestion-grid">
+                            <div class="suggestion-card" onclick="askProfessionalTutor('写一篇关于人工智能的科普文章')">
+                                <i class="fas fa-pen"></i>
+                                <span>写文章</span>
+                            </div>
+                            <div class="suggestion-card" onclick="askProfessionalTutor('解释一下什么是量子计算')">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>解释概念</span>
+                            </div>
+                            <div class="suggestion-card" onclick="askProfessionalTutor('帮我写一段Python代码实现快速排序')">
+                                <i class="fas fa-code"></i>
+                                <span>编写代码</span>
+                            </div>
+                            <div class="suggestion-card" onclick="askProfessionalTutor('推荐几本值得读的科幻小说')">
+                                <i class="fas fa-book"></i>
+                                <span>书籍推荐</span>
+                            </div>
+                            <div class="suggestion-card" onclick="askProfessionalTutor('分析一下当前科技行业的发展趋势')">
+                                <i class="fas fa-chart-line"></i>
+                                <span>行业分析</span>
+                            </div>
+                            <div class="suggestion-card" onclick="askProfessionalTutor('给我制定一个学习计划来提高编程技能')">
+                                <i class="fas fa-tasks"></i>
+                                <span>制定计划</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1255,7 +1291,7 @@ ${content}
         }
     }
 
-    // 专业导师功能
+    // 通用问答助手功能
     askProfessionalTutor(question) {
         const professionalTutorInput = document.getElementById('professionalTutorInput');
         if (professionalTutorInput) {
@@ -1272,20 +1308,21 @@ ${content}
         if (!message) return;
 
         input.value = '';
+        input.style.height = 'auto';
         this.addProfessionalTutorMessage(message, 'user');
         this.showProfessionalTutorTyping();
 
         try {
-            // 根据当前选择的模型调用对应的 API
-            const response = await this.callAIAPI(message, this.currentModel || 'deepseek');
+            // 固定使用 deepseek 模型
+            const response = await this.callAIAPI(message, 'deepseek');
             this.hideProfessionalTutorTyping();
             this.addProfessionalTutorMessage(response, 'assistant');
         } catch (error) {
-            console.error(`${this.currentModel} API调用失败:`, error);
+            console.error('deepseek API调用失败:', error);
             this.hideProfessionalTutorTyping();
-            // 如果API调用失败，使用本地模拟回复
-            const fallbackResponse = this.generateProfessionalTutorResponse(message);
-            this.addProfessionalTutorMessage(fallbackResponse, 'assistant');
+            // 显示真实错误信息给用户
+            const errorMessage = error.message || 'API调用失败，请检查服务器配置和API密钥';
+            this.addProfessionalTutorMessage(`❌ 错误: ${errorMessage}\n\n请检查：\n1. 服务器是否正在运行（http://localhost:3000）\n2. config.json 中的 API 密钥是否正确\n3. 网络连接是否正常`, 'assistant');
         }
     }
 
@@ -1468,7 +1505,7 @@ ${content}
 
     generateProfessionalTutorResponse(userMessage) {
         const responses = {
-            '专业概念,概念,定义': `作为专业导师，我来为您详细解释专业概念：
+            '专业概念,概念,定义': `我来为您详细解释专业概念：
 
 **概念理解的重要性：**
 • 专业概念是学科知识的基础
@@ -1574,26 +1611,22 @@ ${content}
             }
         }
 
-        return `感谢您的提问！作为专业导师，我专注于提供深度的学科知识和专业指导。
+        return `感谢您的提问！我是您的智能问答助手，可以为您提供全方位的帮助和支持。
 
-**我的专业领域：**
-• 专业概念解释和理论分析
-• 研究方法和学术写作指导
-• 专业学习资源推荐
-• 专业发展趋势分析
+**我可以为您：**
+• 解答各种问题，无论是学术还是生活
+• 提供深度分析和见解
+• 协助学习和研究
+• 推荐学习资源和工具
+• 处理各种文档和内容创作
 
-**服务特色：**
-• 深度专业分析
-• 前沿知识分享
-• 研究方法指导
-• 学术能力培养
+**我的特点：**
+• 全面智能分析
+• 及时准确的信息
+• 友好耐心的交流
+• 个性化的建议
 
-**建议您：**
-1. 明确具体的专业问题
-2. 提供相关的背景信息
-3. 说明学习或研究目标
-
-这样我就能为您提供更专业、更深入的指导。您还有什么专业问题需要咨询吗？`;
+请随时向我提问，我会尽力帮助您！`;
     }
 
     showProfessionalTutorTyping() {
@@ -1609,7 +1642,7 @@ ${content}
             <div class="message-content">
                 <div class="message-bubble">
                     <div class="typing-indicator">
-                        <span>专业导师正在分析</span>
+                        <span>问答助手正在分析</span>
                         <div class="typing-dots">
                             <span></span>
                             <span></span>
@@ -1632,22 +1665,43 @@ ${content}
     }
 
     clearProfessionalTutorChat() {
-        if (confirm('确定要清空与专业导师的对话记录吗？')) {
+        if (confirm('确定要清空与问答助手的对话记录吗？')) {
             const messagesContainer = document.getElementById('professionalTutorMessages');
             if (messagesContainer) {
                 messagesContainer.innerHTML = `
                 <div class="welcome-message">
                     <div class="welcome-content">
-                        <i class="fas fa-chalkboard-teacher"></i>
-                        <h3>欢迎使用专业导师！</h3>
-                        <p>我是您的专业学科导师，专注于提供深度的学科知识和专业指导。</p>
-                        <div class="quick-questions">
-                            <h4>专业指导：</h4>
-                            <div class="question-chips">
-                                <span class="chip" onclick="askProfessionalTutor('请解释这个专业概念')">专业概念解释</span>
-                                <span class="chip" onclick="askProfessionalTutor('如何进行专业研究？')">专业研究方法</span>
-                                <span class="chip" onclick="askProfessionalTutor('推荐专业学习资源')">专业学习资源</span>
-                                <span class="chip" onclick="askProfessionalTutor('分析专业发展趋势')">专业发展趋势</span>
+                        <i class="fas fa-chalkboard-teacher" style="font-size: 64px; color: #667eea; margin-bottom: 20px;"></i>
+                        <h3>欢迎使用通用问答助手！</h3>
+                        <p class="welcome-subtitle">我是您的智能问答助手，可以帮助您解答问题、分析数据、撰写文档，或进行任何对话</p>
+                        
+                        <div class="quick-suggestions">
+                            <h4>试试问我：</h4>
+                            <div class="suggestion-grid">
+                                <div class="suggestion-card" onclick="askProfessionalTutor('写一篇关于人工智能的科普文章')">
+                                    <i class="fas fa-pen"></i>
+                                    <span>写文章</span>
+                                </div>
+                                <div class="suggestion-card" onclick="askProfessionalTutor('解释一下什么是量子计算')">
+                                    <i class="fas fa-lightbulb"></i>
+                                    <span>解释概念</span>
+                                </div>
+                                <div class="suggestion-card" onclick="askProfessionalTutor('帮我写一段Python代码实现快速排序')">
+                                    <i class="fas fa-code"></i>
+                                    <span>编写代码</span>
+                                </div>
+                                <div class="suggestion-card" onclick="askProfessionalTutor('推荐几本值得读的科幻小说')">
+                                    <i class="fas fa-book"></i>
+                                    <span>书籍推荐</span>
+                                </div>
+                                <div class="suggestion-card" onclick="askProfessionalTutor('分析一下当前科技行业的发展趋势')">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>行业分析</span>
+                                </div>
+                                <div class="suggestion-card" onclick="askProfessionalTutor('给我制定一个学习计划来提高编程技能')">
+                                    <i class="fas fa-tasks"></i>
+                                    <span>制定计划</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1672,7 +1726,7 @@ ${content}
         }
     }
 
-    // 新建专业导师对话
+    // 新建问答助手对话
     newProfessionalChat() {
         if (confirm('确定要开始新的对话吗？当前对话将被保存到历史记录中。')) {
             // 保存当前会话（如果有消息的话）
@@ -2068,12 +2122,84 @@ ${content}
 
     // 格式化消息内容
     formatMessage(content) {
-        // 简单的Markdown支持
-        return content
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/`(.*?)`/g, '<code>$1</code>')
-            .replace(/\n/g, '<br>');
+        if (!content) return '';
+        
+        let text = content;
+        
+        // 先处理代码块（三个反引号）以避免在其中处理其他markdown
+        const codeBlockPlaceholders = [];
+        text = text.replace(/```([\s\S]*?)```/g, (match, code) => {
+            const index = codeBlockPlaceholders.length;
+            codeBlockPlaceholders.push({
+                type: 'block',
+                html: `<pre class="code-block"><code>${this.escapeHtml(code.trim())}</code></pre>`
+            });
+            return `___CODEBLOCK_${index}___`;
+        });
+        
+        // 转义 HTML
+        text = this.escapeHtml(text);
+        
+        // 恢复代码块
+        codeBlockPlaceholders.forEach((placeholder, index) => {
+            text = text.replace(`___CODEBLOCK_${index}___`, placeholder.html);
+        });
+        
+        // 处理标题
+        text = text.replace(/^### (.*)/gm, '<h3>$1</h3>');
+        text = text.replace(/^## (.*)/gm, '<h2>$1</h2>');
+        text = text.replace(/^# (.*)/gm, '<h1>$1</h1>');
+        
+        // 处理无序列表
+        text = text.replace(/^[\-*] (.+)/gm, '<li>$1</li>');
+        // 将连续的 <li> 包装在 <ul> 中
+        text = text.replace(/(<li>.*?<\/li>\n?)+/gs, '<ul>$&</ul>');
+        
+        // 处理有序列表  
+        text = text.replace(/^\d+\. (.+)/gm, '<li>$1</li>');
+        // 将连续的有序列表项包装
+        text = text.replace(/(<li>\d+\..*?<\/li>\n?)+/gs, '<ol>$&</ol>');
+        
+        // 处理引用
+        text = text.replace(/^&gt; (.+)/gm, '<blockquote>$1</blockquote>');
+        
+        // 处理删除线
+        text = text.replace(/~~(.*?)~~/g, '<del>$1</del>');
+        
+        // 处理粗体（**text**）
+        text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        
+        // 处理斜体（*text*）
+        text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        
+        // 处理链接 [text](url)
+        text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+        
+        // 处理代码（单个反引号）
+        text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+        
+        // 处理换行
+        text = text.replace(/\n\n+/g, '</p><p>');
+        text = text.replace(/\n/g, '<br>');
+        
+        // 包裹段落
+        if (text.trim() && !text.trim().match(/^<(h[1-3]|ul|li|blockquote|pre|code)/)) {
+            text = '<p>' + text + '</p>';
+        }
+        
+        return text;
+    }
+    
+    // 转义HTML
+    escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]);
     }
 
     // 作文批改功能
@@ -4335,21 +4461,69 @@ function closeFileUploadModal() {
     switchUploadTab('new');
 }
 
-function confirmFileUpload() {
+async function confirmFileUpload() {
     if (selectedFiles.length === 0) {
         alert('请先选择文件');
         return;
     }
     
-    // 这里可以添加实际上传文件的逻辑
     console.log('已选择的文件:', selectedFiles);
     
-    // 显示上传的文件列表
-    const fileNames = selectedFiles.map((f, idx) => `${idx + 1}. ${f.name}`).join('\n');
-    alert(`成功选择 ${selectedFiles.length} 个文件：\n${fileNames}`);
+    // 只上传新选择的文件
+    const newFiles = selectedFiles.filter(f => f.source === 'new' && f.file);
     
-    // 这里可以调用API上传文件
-    // 例如: uploadFilesToServer(selectedFiles);
+    if (newFiles.length === 0) {
+        // 只选择了已有文件，不需要上传
+        const fileNames = selectedFiles.map((f) => f.name).join(', ');
+        alert(`已附加 ${selectedFiles.length} 个文件：\n${fileNames}`);
+        closeFileUploadModal();
+        return;
+    }
+    
+    // 创建FormData对象
+    const formData = new FormData();
+    newFiles.forEach(fileObj => {
+        formData.append('files', fileObj.file);
+    });
+    
+    // 显示上传进度
+    const uploadBtn = document.querySelector('.file-upload-modal .modal-footer .btn-primary');
+    if (uploadBtn) {
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 上传中...';
+    }
+    
+    try {
+        const base = (location.origin && location.origin.startsWith('http') ? location.origin : 'http://localhost:3000') + '/api';
+        const response = await fetch(`${base}/upload`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // 保存提取的文本内容到全局变量
+            window.uploadedFilesContext = result.extractedText || '';
+            window.uploadedFiles = selectedFiles.map(f => ({ name: f.name, size: f.size }));
+            
+            const fileNames = selectedFiles.map((f) => f.name).join(', ');
+            alert(`成功上传 ${result.files.length} 个文件：\n${fileNames}\n\n文件内容已解析，现在可以向导师提问！`);
+            
+            // 显示上传的文件标签
+            showUploadedFilesBadge();
+        } else {
+            throw new Error(result.error || '上传失败');
+        }
+    } catch (error) {
+        console.error('文件上传失败:', error);
+        alert('文件上传失败: ' + error.message);
+    } finally {
+        if (uploadBtn) {
+            uploadBtn.disabled = false;
+            uploadBtn.innerHTML = '<i class="fas fa-check"></i> 确认';
+        }
+    }
     
     // 关闭弹窗
     closeFileUploadModal();
@@ -4548,6 +4722,54 @@ function formatFileSize(bytes) {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+// 显示已上传的文件标签
+function showUploadedFilesBadge() {
+    // 查找或创建已上传文件显示的容器
+    let badgeContainer = document.getElementById('uploadedFilesBadge');
+    if (!badgeContainer) {
+        const inputWrapper = document.querySelector('#myTutor .input-wrapper');
+        if (inputWrapper) {
+            badgeContainer = document.createElement('div');
+            badgeContainer.id = 'uploadedFilesBadge';
+            badgeContainer.style.cssText = 'display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; padding: 10px; background: #f0f4ff; border-radius: 8px;';
+            inputWrapper.insertAdjacentElement('beforebegin', badgeContainer);
+        }
+    }
+    
+    if (!badgeContainer || !window.uploadedFiles) return;
+    
+    // 显示已上传的文件
+    badgeContainer.innerHTML = '<span style="color: #667eea; font-weight: 600; margin-right: auto;"><i class="fas fa-paperclip"></i> 已附加文件：</span>' +
+        window.uploadedFiles.map(file => 
+            `<span style="background: white; padding: 4px 12px; border-radius: 16px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-file"></i> ${file.name}
+                <button onclick="removeUploadedFile('${file.name}')" style="background: none; border: none; color: #999; cursor: pointer; margin-left: 4px;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </span>`
+        ).join('');
+}
+
+// 移除已上传的文件
+function removeUploadedFile(fileName) {
+    if (!window.uploadedFiles) return;
+    
+    // 从数组中移除
+    window.uploadedFiles = window.uploadedFiles.filter(f => f.name !== fileName);
+    
+    // 如果所有文件都被移除，清空上下文
+    if (window.uploadedFiles.length === 0) {
+        window.uploadedFilesContext = '';
+        const badgeContainer = document.getElementById('uploadedFilesBadge');
+        if (badgeContainer) {
+            badgeContainer.remove();
+        }
+    } else {
+        // 更新显示
+        showUploadedFilesBadge();
+    }
 }
 
 // 导出供外部使用

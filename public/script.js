@@ -82,11 +82,13 @@ function setupRealTimeValidation() {
 
 // 填入演示账户
 function fillDemoAccount() {
-    // 使用数据库中的第一个账号作为演示账户
-    const firstAccount = Object.entries(userDatabase)[0];
-    if (firstAccount) {
-        document.getElementById('username').value = firstAccount[0];
-        document.getElementById('password').value = firstAccount[1];
+    // 从页面显示的演示账户信息中获取真实的账户和密码
+    const demoUsername = document.getElementById('demoUsername').textContent;
+    const demoPassword = document.getElementById('demoPassword').textContent;
+    
+    if (demoUsername && demoPassword) {
+        document.getElementById('username').value = demoUsername;
+        document.getElementById('password').value = demoPassword;
         
         // 触发验证
         document.getElementById('username').dispatchEvent(new Event('input'));
@@ -226,13 +228,35 @@ document.addEventListener('DOMContentLoaded', async function() {
     // 加载用户数据库
     await loadUserDatabase();
     
-    // 显示数据库中的第一个账号作为演示账户
-    const firstAccount = Object.entries(userDatabase)[0];
-    if (firstAccount && firstAccount[1] !== '***') {
-        document.getElementById('demoUsername').textContent = firstAccount[0];
-        document.getElementById('demoPassword').textContent = firstAccount[1];
-    } else {
-        // 显示默认账户
+    // 演示账户映射（学号 -> 密码）
+    const demoAccounts = {
+        '12345678': 'abcdef',
+        '20240001': 'student',
+        '20240002': 'test123',
+        '20240003': 'demoab',
+        '20240004': 'student'
+    };
+    
+    // 尝试从 API 获取第一个用户作为演示账户
+    try {
+        const apiBase = (location.origin && location.origin.startsWith('http') ? location.origin : 'http://localhost:3000');
+        const response = await fetch(`${apiBase}/api/users`);
+        const data = await response.json();
+        
+        if (data.users && data.users.length > 0) {
+            // 使用第一个用户的学号
+            const studentId = data.users[0].studentId;
+            document.getElementById('demoUsername').textContent = studentId;
+            // 从映射中获取对应的密码
+            document.getElementById('demoPassword').textContent = demoAccounts[studentId] || 'abcdef';
+        } else {
+            // 使用默认账户
+            document.getElementById('demoUsername').textContent = '12345678';
+            document.getElementById('demoPassword').textContent = 'abcdef';
+        }
+    } catch (error) {
+        console.error('获取演示账户失败:', error);
+        // 使用默认账户
         document.getElementById('demoUsername').textContent = '12345678';
         document.getElementById('demoPassword').textContent = 'abcdef';
     }

@@ -288,29 +288,13 @@
                 </div>
             </div>
 
-            <!-- 专业导师页面 -->
+            <!-- 通用问答助手页面 -->
             <section id="professionalTutor" class="content-section">
                 <div class="chat-container">
+                    <!-- 顶部工具栏 -->
                     <div class="chat-header">
-                        <div class="header-left">
-                            <h2><i class="fas fa-chalkboard-teacher"></i> 通用问答助手</h2>
-                            <div class="session-info" id="session-info" style="display: none;">
-                                <span class="session-title" id="session-title">新对话</span>
-                                <span class="session-time" id="session-time"></span>
-                            </div>
-                        </div>
+                        <h2><i class="fas fa-chalkboard-teacher"></i> 通用问答助手</h2>
                         <div class="chat-actions">
-                            <div class="model-switcher" style="display:flex;align-items:center;gap:8px;margin-right:12px;">
-                                <span>当前模型：</span>
-                                <strong id="currentModel">deepseek</strong>
-                                <select id="modelSelect" class="select" style="min-width:120px;">
-                                    <option value="deepseek" selected>deepseek</option>
-                                    <option value="kimi">kimi</option>
-                                    <option value="chatgpt">chatgpt</option>
-                                    <option value="doubao">豆包</option>
-                                </select>
-                                <button class="btn btn-primary" id="applyModelBtn">切换模型</button>
-                            </div>
                             <button class="btn btn-secondary" onclick="showChatHistory('professionalTutor')">
                                 <i class="fas fa-history"></i> 历史对话
                             </button>
@@ -323,26 +307,17 @@
                         </div>
                     </div>
                     
+                    <!-- 对话区域 -->
                     <div class="chat-messages" id="professionalTutorMessages">
                         <div class="welcome-message">
                             <div class="welcome-content">
                                 <i class="fas fa-chalkboard-teacher"></i>
                                 <h3>欢迎使用通用问答助手！</h3>
-                                <p>我是您的专业学科导师，专注于提供深度的学科知识和专业指导。</p>
-                                
-                                <div class="quick-questions">
-                                    <h4>专业指导：</h4>
-                                    <div class="question-chips">
-                                        <span class="chip" onclick="askProfessionalTutor('请解释这个专业概念')">专业概念解释</span>
-                                        <span class="chip" onclick="askProfessionalTutor('如何进行专业研究？')">专业研究方法</span>
-                                        <span class="chip" onclick="askProfessionalTutor('推荐专业学习资源')">专业学习资源</span>
-                                        <span class="chip" onclick="askProfessionalTutor('分析专业发展趋势')">专业发展趋势</span>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
                     
+                    <!-- 输入区域 -->
                     <div class="chat-input-container">
                         <div class="input-wrapper">
                             <textarea id="professionalTutorInput" placeholder="向通用问答助手提问..." rows="1"></textarea>

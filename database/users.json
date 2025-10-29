@@ -2,14 +2,14 @@
   "users": [
     {
       "studentId": "12345678",
-      "password": "abcdef",
+      "password": "$2a$10$/kQPa0kdUElNMPOLj9/bKu/LtqfD0gZ5KL.kCSz5ASo6bOfum9emG",
       "name": "张三",
       "grade": "三年级",
       "email": "zhangsan@example.com",
       "avatar": "👨‍🎓",
       "role": "student",
       "createdAt": "2024-01-01T00:00:00.000Z",
-      "lastLogin": "2024-10-27T00:00:00.000Z",
+      "lastLogin": "2025-10-28T17:20:59.210Z",
       "isActive": true,
       "note": "密码将在首次登录时自动加密"
     },
@@ -72,4 +72,3 @@
     "totalUsers": 5
   }
 }
-

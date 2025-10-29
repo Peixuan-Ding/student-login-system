@@ -5,53 +5,54 @@ const { getConfig } = require('./config');
 async function callAIAPI(model, params) {
     const config = getConfig();
     
-    let apiKey, baseUrl;
+    let apiKey, baseUrl, modelName;
     switch (model) {
         case 'deepseek':
             apiKey = process.env.DEEPSEEK_API_KEY || config.deepseek.apiKey;
             baseUrl = config.deepseek.baseUrl;
+            modelName = 'deepseek-v3';
             break;
         case 'kimi':
             apiKey = process.env.KIMI_API_KEY || config.kimi.apiKey;
             baseUrl = config.kimi.baseUrl;
+            modelName = 'moonshot-v1-8k'; // 或其他可用模型
             break;
         case 'chatgpt':
             apiKey = process.env.OPENAI_API_KEY || config.chatgpt.apiKey;
             baseUrl = config.chatgpt.baseUrl;
+            modelName = 'gpt-3.5-turbo';
             break;
         case 'doubao':
             apiKey = process.env.DOUBAO_API_KEY || config.doubao.apiKey;
             baseUrl = config.doubao.baseUrl;
+            modelName = 'ep-'; // 豆包模型前缀
             break;
         default:
             apiKey = process.env.DEEPSEEK_API_KEY || config.deepseek.apiKey;
             baseUrl = config.deepseek.baseUrl;
+            modelName = 'deepseek-v3';
     }
     
     if (!apiKey) {
         throw new Error(`${model.toUpperCase()}_API_KEY not configured`);
     }
 
-    const { messages, temperature = 0.7, max_tokens = 2000 } = params;
+    const { messages, temperature = 0.7, max_tokens = 2000, stream = false } = params;
     
-    // 根据模型选择正确的 URL
-    let url;
-    if (model === 'kimi') {
-        url = `${baseUrl}/v1/chat/completions`;
-    } else if (model === 'doubao') {
-        url = `${baseUrl}/chat`;
-    } else {
-        url = `${baseUrl}/chat/completions`;
-    }
+    // 使用统一的接口地址
+    const url = `${baseUrl}/v1/chat/completions`;
+    
+    const requestBody = {
+        model: params.model || modelName,
+        messages: messages,
+        temperature: temperature,
+        max_tokens: max_tokens,
+        stream: stream
+    };
     
     const response = await axios.post(
         url,
-        {
-            model: params.model || (model === 'kimi' ? 'moonshot-v1-8k' : model === 'chatgpt' ? 'gpt-3.5-turbo' : 'deepseek-chat'),
-            messages: messages,
-            temperature: temperature,
-            max_tokens: max_tokens
-        },
+        requestBody,
         {
             headers: {
                 'Content-Type': 'application/json',

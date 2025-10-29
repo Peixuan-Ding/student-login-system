@@ -1,5 +1,5 @@
 const express = require('express');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const { readDB, writeDB } = require('../utils/database');
@@ -34,7 +34,8 @@ router.post('/login', [
         
         // 检查密码（支持旧明文和新加密密码）
         let isPasswordValid = false;
-        if (user.password.startsWith('$2b$')) {
+        if (user.password.startsWith('$2')) {
+            // 支持所有 bcrypt 格式（$2a$, $2b$, $2y$ 等）
             isPasswordValid = await bcrypt.compare(password, user.password);
         } else {
             isPasswordValid = user.password === password;

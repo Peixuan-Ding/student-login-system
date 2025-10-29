@@ -1,18 +1,24 @@
 {
+  "_comment": "使用 Probex API - 统一AI接口代理，所有模型使用同一个key",
   "deepseek": {
-    "apiKey": "your-deepseek-api-key-here",
-    "baseUrl": "https://api.deepseek.com"
+    "apiKey": "your-probex-api-key-here",
+    "baseUrl": "https://api.probex.top",
+    "model": "deepseek-v3"
   },
   "kimi": {
-    "apiKey": "your-kimi-api-key-here",
-    "baseUrl": "https://api.moonshot.cn"
+    "apiKey": "your-probex-api-key-here",
+    "baseUrl": "https://api.probex.top",
+    "model": "moonshot-v1-8k"
   },
-  "chatgpt": {
-    "apiKey": "your-chatgpt-api-key-here",
-    "baseUrl": "https://api.openai.com"
+  "openai": {
+    "apiKey": "your-probex-api-key-here",
+    "baseUrl": "https://api.probex.top",
+    "model": "gpt-3.5-turbo"
   },
   "doubao": {
-    "apiKey": "your-doubao-api-key-here",
-    "baseUrl": "https://ark.cn-beijing.volces.com/api/v3"
-  }
+    "apiKey": "your-probex-api-key-here",
+    "baseUrl": "https://api.probex.top",
+    "model": "doubao-pro-32k"
+  },
+  "_note": "配置时请删除_comment和_note字段"
 }

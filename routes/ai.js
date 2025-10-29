@@ -15,11 +15,29 @@ router.post('/deepseek/chat', async (req, res) => {
             return res.status(401).json({ error: 'DEEPSEEK_API_KEY not configured' });
         }
 
-        const { model = 'deepseek-chat', messages, temperature = 0.7, max_tokens = 2000 } = req.body;
+        const { messages, temperature = 0.7, max_tokens = 2000, stream = false, fileContext } = req.body;
+        const model = req.body.model || 'deepseek-chat';
+
+        // 如果提供了文件上下文，添加到系统提示词中
+        let processedMessages = messages;
+        if (fileContext && fileContext.trim()) {
+            // 将文件上下文添加到第一个系统消息或者创建一个新的系统消息
+            const systemMessageIndex = processedMessages.findIndex(m => m.role === 'system');
+            const fileContextPrompt = `\n\n以下是用户上传的文件内容，请基于这些内容回答用户的问题：\n\n${fileContext}`;
+            
+            if (systemMessageIndex !== -1) {
+                processedMessages[systemMessageIndex].content += fileContextPrompt;
+            } else {
+                processedMessages.unshift({
+                    role: 'system',
+                    content: `你是一位专业的学科导师。${fileContextPrompt}`
+                });
+            }
+        }
 
         const response = await axios.post(
-            `${config.deepseek.baseUrl}/chat/completions`,
-            { model, messages, temperature, max_tokens },
+            `${config.deepseek.baseUrl}/v1/chat/completions`,
+            { model, messages: processedMessages, temperature, max_tokens, stream },
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -47,11 +65,12 @@ router.post('/kimi/chat', async (req, res) => {
             return res.status(401).json({ error: 'KIMI_API_KEY not configured' });
         }
 
-        const { model = 'moonshot-v1-8k', messages, temperature = 0.7, max_tokens = 2000 } = req.body;
+        const { messages, temperature = 0.7, max_tokens = 2000, stream = false } = req.body;
+        const model = req.body.model || 'moonshot-v1-8k';
 
         const response = await axios.post(
             `${config.kimi.baseUrl}/v1/chat/completions`,
-            { model, messages, temperature, max_tokens },
+            { model, messages, temperature, max_tokens, stream },
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -79,11 +98,12 @@ router.post('/chatgpt/chat', async (req, res) => {
             return res.status(401).json({ error: 'OPENAI_API_KEY not configured' });
         }
 
-        const { model = 'gpt-3.5-turbo', messages, temperature = 0.7, max_tokens = 2000 } = req.body;
+        const { messages, temperature = 0.7, max_tokens = 2000, stream = false } = req.body;
+        const model = req.body.model || 'gpt-3.5-turbo';
 
         const response = await axios.post(
             `${config.chatgpt.baseUrl}/v1/chat/completions`,
-            { model, messages, temperature, max_tokens },
+            { model, messages, temperature, max_tokens, stream },
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -111,11 +131,12 @@ router.post('/doubao/chat', async (req, res) => {
             return res.status(401).json({ error: 'DOUBAO_API_KEY not configured' });
         }
 
-        const { model = 'ep-xxx', messages, temperature = 0.7, max_tokens = 2000 } = req.body;
+        const { messages, temperature = 0.7, max_tokens = 2000, stream = false } = req.body;
+        const model = req.body.model || 'doubao-pro'; // 根据实际可用的豆包模型调整
 
         const response = await axios.post(
-            `${config.doubao.baseUrl}/chat`,
-            { model, messages, temperature, max_tokens },
+            `${config.doubao.baseUrl}/v1/chat/completions`,
+            { model, messages, temperature, max_tokens, stream },
             {
                 headers: {
                     'Content-Type': 'application/json',
