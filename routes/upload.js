@@ -3,6 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
 const { extractTextFromFiles } = require('../utils/fileProcessor');
+const { readDB, writeDB } = require('../utils/database');
 
 const router = express.Router();
 
@@ -52,7 +53,7 @@ const upload = multer({
     }
 });
 
-// 文件上传路由
+// 文件上传路由（用于导师聊天）
 router.post('/upload', upload.array('files', 10), async (req, res) => {
     try {
         if (!req.files || req.files.length === 0) {
@@ -82,6 +83,132 @@ router.post('/upload', upload.array('files', 10), async (req, res) => {
     } catch (error) {
         console.error('文件上传处理失败:', error);
         res.status(500).json({ error: '文件处理失败: ' + error.message });
+    }
+});
+
+// 保存文件到数据库（教材、教案、知识库）
+router.post('/save-file', async (req, res) => {
+    try {
+        const { category, fileData } = req.body;
+
+        if (!category || !fileData) {
+            return res.status(400).json({ error: '缺少必需参数' });
+        }
+
+        let dbKey, arrayKey, fileIdPrefix;
+        
+        switch(category) {
+            case 'textbook':
+            case 'materials':
+                dbKey = 'materials';
+                arrayKey = 'materials';
+                fileIdPrefix = 'mat_';
+                break;
+            case 'lessonPlan':
+            case 'lesson_plans':
+                dbKey = 'lessonPlans';
+                arrayKey = 'lessonPlans';
+                fileIdPrefix = 'lp_';
+                break;
+            case 'resource':
+            case 'resources':
+                dbKey = 'resources';
+                arrayKey = 'resources';
+                fileIdPrefix = 'res_';
+                break;
+            default:
+                return res.status(400).json({ error: '无效的类别' });
+        }
+
+        // 读取现有数据
+        const existingData = readDB(dbKey) || { [arrayKey]: [] };
+        
+        // 生成新ID
+        const existingCount = existingData[arrayKey].length;
+        const newId = `${fileIdPrefix}${String(existingCount + 1).padStart(3, '0')}`;
+
+        // 添加时间戳
+        const newFile = {
+            id: newId,
+            ...fileData,
+            uploadDate: new Date().toISOString()
+        };
+
+        // 添加到数组
+        existingData[arrayKey].push(newFile);
+
+        // 保存到数据库
+        const success = writeDB(dbKey, existingData);
+
+        if (success) {
+            res.json({
+                success: true,
+                fileId: newId,
+                message: '文件保存成功'
+            });
+        } else {
+            res.status(500).json({ error: '保存文件失败' });
+        }
+    } catch (error) {
+        console.error('保存文件失败:', error);
+        res.status(500).json({ error: '保存文件失败: ' + error.message });
+    }
+});
+
+// 删除文件
+router.delete('/delete-file/:category/:fileId', async (req, res) => {
+    try {
+        const { category, fileId } = req.params;
+
+        let dbKey, arrayKey;
+        
+        switch(category) {
+            case 'textbook':
+            case 'materials':
+                dbKey = 'materials';
+                arrayKey = 'materials';
+                break;
+            case 'lessonPlan':
+            case 'lesson_plans':
+                dbKey = 'lessonPlans';
+                arrayKey = 'lessonPlans';
+                break;
+            case 'resource':
+            case 'resources':
+                dbKey = 'resources';
+                arrayKey = 'resources';
+                break;
+            default:
+                return res.status(400).json({ error: '无效的类别' });
+        }
+
+        // 读取现有数据
+        const existingData = readDB(dbKey) || { [arrayKey]: [] };
+        
+        // 查找并删除文件
+        const index = existingData[arrayKey].findIndex(file => file.id === fileId);
+        
+        if (index === -1) {
+            return res.status(404).json({ error: '文件不存在' });
+        }
+
+        // 删除文件记录
+        existingData[arrayKey].splice(index, 1);
+
+        // 保存到数据库
+        const success = writeDB(dbKey, existingData);
+
+        if (success) {
+            res.json({
+                success: true,
+                message: '文件删除成功'
+            });
+        } else {
+            res.status(500).json({ error: '删除文件失败' });
+        }
+    } catch (error) {
+        console.error('删除文件失败:', error);
+        res.status(500).json({ error: '删除文件失败: ' + error.message });
     }
 });
 

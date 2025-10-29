@@ -29,3 +29,19 @@ Thumbs.db
 
 # 上传文件
 uploads/
+
+# 部署脚本和临时文件
+*.bat
+*.sh.bak
+deploy-*.sh
+deploy-*.ps1
+
+# 文档和说明文件
+*总结.md
+*步骤*.md
+*命令*.txt
+*指南.md
+
+# 备份文件
+*.bak
+*.backup

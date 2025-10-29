@@ -15,10 +15,10 @@ class LearningPlatform {
         this.currentModel = 'deepseek';
         this.currentWeek = 1; // 当前教学周
         this.currentView = 'weekly'; // 当前视图：weekly 或 category
-        // 生成Week1-13的完整课程数据
-        this.textbookData = this.generateWeeklyCourseData('textbook');
-        this.lessonPlanData = this.generateWeeklyCourseData('lesson');
-        this.resourceData = this.generateResourceData();
+        // 初始化为空数组，将从后端加载
+        this.textbookData = [];
+        this.lessonPlanData = [];
+        this.resourceData = [];
         this.translations = {
             'zh-CN': {
                 'welcome': '欢迎，',
@@ -77,88 +77,79 @@ class LearningPlatform {
         
         this.init();
         this.loadProfessionalTutorSessions(); // 加载会话历史
+        this.loadFileData(); // 加载文件数据
     }
 
-    // 生成Week1-13的课程数据
-    generateWeeklyCourseData(type) {
-        const subjects = ['英语', '数学', '语文', '物理', '化学', '生物', '地理', '历史', '科学'];
-        const data = [];
-        
-        subjects.forEach((subject, subjectIndex) => {
-            for (let week = 1; week <= 13; week++) {
-                if (type === 'textbook') {
-                    data.push({
-                        id: data.length + 1,
-                        name: `${subject}第${week}周教材`,
-                        type: 'PDF',
-                        size: `${(2 + Math.random()).toFixed(1)}MB`,
-                        date: `2024-${String(Math.floor((week - 1) / 4 + 1)).padStart(2, '0')}-${String((week - 1) % 28 + 1).padStart(2, '0')}`,
-                        week: week,
-                        subject: subject,
-                        tags: [subject, '教材']
-                    });
-                    data.push({
-                        id: data.length + 1,
-                        name: `${subject}Week${week}练习题`,
-                        type: 'DOCX',
-                        size: `${(Math.random() * 1.5 + 0.5).toFixed(1)}MB`,
-                        date: `2024-${String(Math.floor((week - 1) / 4 + 1)).padStart(2, '0')}-${String((week - 1) % 28 + 1).padStart(2, '0')}`,
-                        week: week,
-                        subject: subject,
-                        tags: [subject, '练习']
-                    });
-                } else {
-                    data.push({
-                        id: data.length + 1,
-                        name: `${subject}Week${week}教学计划`,
-                        type: 'DOCX',
-                        size: `${(Math.random() * 100 + 50).toFixed(0)}KB`,
-                        date: `2024-${String(Math.floor((week - 1) / 4 + 1)).padStart(2, '0')}-${String((week - 1) % 28 + 1).padStart(2, '0')}`,
-                        week: week,
-                        subject: subject,
-                        tags: [subject, '教案'],
-                        subtype: 'teaching_content'
-                    });
-                }
+    // 从后端加载文件数据
+    async loadFileData() {
+        try {
+            // 加载教材数据
+            const materialsRes = await fetch('/api/content/materials');
+            const materialsData = await materialsRes.json();
+            this.textbookData = (materialsData.materials || []).map(file => ({
+                id: file.id,
+                name: file.title || file.name,
+                type: file.fileType?.toUpperCase() || 'PDF',
+                size: file.size || '0MB',
+                date: new Date(file.uploadDate).toLocaleDateString('zh-CN'),
+                week: file.week || 1,
+                subject: file.subject || '',
+                tags: file.tags || []
+            }));
+
+            // 加载教案数据
+            const lessonPlansRes = await fetch('/api/content/lesson-plans');
+            const lessonPlansData = await lessonPlansRes.json();
+            this.lessonPlanData = (lessonPlansData.lessonPlans || []).map(file => ({
+                id: file.id,
+                name: file.title || file.name,
+                type: file.fileType?.toUpperCase() || 'DOCX',
+                size: file.size || '0KB',
+                date: new Date(file.uploadDate || file.createdAt).toLocaleDateString('zh-CN'),
+                week: file.week || 1,
+                subject: file.subject || '',
+                tags: file.tags || [],
+                subtype: file.subtype
+            }));
+
+            // 加载资源数据
+            const resourcesRes = await fetch('/api/content/resources');
+            const resourcesData = await resourcesRes.json();
+            this.resourceData = (resourcesData.resources || []).map(file => ({
+                id: file.id,
+                name: file.title || file.name,
+                type: file.fileType?.toUpperCase() || 'FILE',
+                originalType: file.type || file.originalType || 'file',
+                size: file.size || '0MB',
+                date: new Date(file.uploadDate).toLocaleDateString('zh-CN'),
+                iconClass: file.iconClass || 'file'
+            }));
+
+            // 更新UI
+            this.refreshCurrentView();
+        } catch (error) {
+            console.error('加载文件数据失败:', error);
+        }
+    }
+
+    // 刷新当前视图
+    refreshCurrentView() {
+        if (this.currentSection === 'textbooks') {
+            if (this.currentView === 'weekly') {
+                this.loadWeeklyContent();
+            } else {
+                this.loadCategoryContent();
             }
-        });
-        
-        return data;
+        } else if (this.currentSection === 'lessonPlans') {
+            if (this.currentView === 'weekly') {
+                loadLessonPlanWeeklyContent();
+            }
+        } else if (this.currentSection === 'resources') {
+            this.loadResourceContent();
+        }
     }
 
-    // 生成个人知识库数据
-    generateResourceData() {
-        const subjects = ['英语', '数学', '语文', '物理', '化学', '生物', '地理', '历史'];
-        const resourceTypes = [
-            { type: 'video', name: '讲解视频', ext: 'mp4', icon: 'fa-video' },
-            { type: 'image', name: '图解', ext: 'png', icon: 'fa-image' },
-            { type: 'audio', name: '听力材料', ext: 'mp3', icon: 'fa-headphones' },
-            { type: 'zip', name: '练习包', ext: 'zip', icon: 'fa-file-archive' }
-        ];
-        const data = [];
-        
-        subjects.forEach((subject, subjectIndex) => {
-            resourceTypes.forEach((resourceType, typeIndex) => {
-                data.push({
-                    id: data.length + 1,
-                    name: `${subject}${resourceType.name}`,
-                    type: resourceType.ext.toUpperCase(),
-                    originalType: resourceType.type,
-                    size: resourceType.type === 'video' ? '125MB' : 
-                          resourceType.type === 'audio' ? '15.6MB' : 
-                          resourceType.type === 'image' ? '2.1MB' : 
-                          '8.3MB',
-                    date: `2024-${String(Math.floor((subjectIndex * 4 + typeIndex) / 28 + 1)).padStart(2, '0')}-${String((subjectIndex * 4 + typeIndex) % 28 + 1).padStart(2, '0')}`,
-                    subject: subject,
-                    category: resourceType.type,
-                    iconClass: resourceType.icon,
-                    tags: [subject, resourceType.name]
-                });
-            });
-        });
-        
-        return data;
-    }
+    // 已废弃：假数据生成函数，现在从API加载
 
     init() {
         this.loadUserInfo();
@@ -2907,13 +2898,13 @@ ${content}
                     <div class="file-size">${file.size}</div>
                     <div class="file-date">${file.date}</div>
                     <div class="file-actions">
-                        <button class="btn btn-primary btn-sm" title="查看">
+                        <button class="btn btn-primary btn-sm" title="查看" onclick="viewFile('textbook', ${file.id})">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-secondary btn-sm" title="下载">
+                        <button class="btn btn-secondary btn-sm" title="下载" onclick="downloadFile('textbook', ${file.id}, '${file.name}')">
                             <i class="fas fa-download"></i>
                         </button>
-                        <button class="btn btn-danger btn-sm" title="删除">
+                        <button class="btn btn-danger btn-sm" title="删除" onclick="deleteFile('textbook', ${file.id}, '${file.name}')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -2958,13 +2949,13 @@ ${content}
                     <div class="file-size">${file.size}</div>
                     <div class="file-date">${file.date}</div>
                     <div class="file-actions">
-                        <button class="btn btn-primary btn-sm" title="查看">
+                        <button class="btn btn-primary btn-sm" title="查看" onclick="viewFile('textbook', ${file.id})">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-secondary btn-sm" title="下载">
+                        <button class="btn btn-secondary btn-sm" title="下载" onclick="downloadFile('textbook', ${file.id}, '${file.name}')">
                             <i class="fas fa-download"></i>
                         </button>
-                        <button class="btn btn-danger btn-sm" title="删除">
+                        <button class="btn btn-danger btn-sm" title="删除" onclick="deleteFile('textbook', ${file.id}, '${file.name}')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -3076,6 +3067,17 @@ ${content}
         const resourceList = document.querySelector('#resources .file-list');
         if (!resourceList) return;
 
+        if (!this.resourceData || this.resourceData.length === 0) {
+            resourceList.innerHTML = `
+                <div style="padding: 60px 20px; text-align: center; color: #6b7280;">
+                    <i class="fas fa-folder-open" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+                    <p>暂无资源文件</p>
+                    <p style="font-size: 14px; margin-top: 8px;">点击上方"上传资源"按钮添加文件</p>
+                </div>
+            `;
+            return;
+        }
+
         let html = `
             <div class="file-list-header">
                 <div class="file-name">文件名</div>
@@ -3111,7 +3113,7 @@ ${content}
                         <button class="btn btn-secondary btn-sm" title="下载" onclick="downloadResource(${resource.id})">
                             <i class="fas fa-download"></i>
                         </button>
-                        <button class="btn btn-danger btn-sm" title="删除" onclick="deleteResource(${resource.id})">
+                        <button class="btn btn-danger btn-sm" title="删除" onclick="deleteFile('resource', ${resource.id}, '${resource.name}')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -3570,13 +3572,13 @@ function loadLessonPlanWeeklyContent() {
                 <div class="file-size">${file.size}</div>
                 <div class="file-date">${file.date}</div>
                 <div class="file-actions">
-                    <button class="btn btn-primary btn-sm" title="查看">
+                    <button class="btn btn-primary btn-sm" title="查看" onclick="viewFile('lessonPlan', ${file.id})">
                         <i class="fas fa-eye"></i>
                     </button>
-                    <button class="btn btn-secondary btn-sm" title="下载">
+                    <button class="btn btn-secondary btn-sm" title="下载" onclick="downloadFile('lessonPlan', ${file.id}, '${file.name}')">
                         <i class="fas fa-download"></i>
                     </button>
-                    <button class="btn btn-danger btn-sm" title="删除">
+                    <button class="btn btn-danger btn-sm" title="删除" onclick="deleteFile('lessonPlan', ${file.id}, '${file.name}')">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -3627,13 +3629,13 @@ function loadLessonPlanCategoryContent() {
                 <div class="file-size">${file.size}</div>
                 <div class="file-date">${file.date}</div>
                 <div class="file-actions">
-                    <button class="btn btn-primary btn-sm" title="查看">
+                    <button class="btn btn-primary btn-sm" title="查看" onclick="viewFile('lessonPlan', ${file.id})">
                         <i class="fas fa-eye"></i>
                     </button>
-                    <button class="btn btn-secondary btn-sm" title="下载">
+                    <button class="btn btn-secondary btn-sm" title="下载" onclick="downloadFile('lessonPlan', ${file.id}, '${file.name}')">
                         <i class="fas fa-download"></i>
                     </button>
-                    <button class="btn btn-danger btn-sm" title="删除">
+                    <button class="btn btn-danger btn-sm" title="删除" onclick="deleteFile('lessonPlan', ${file.id}, '${file.name}')">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -3837,6 +3839,7 @@ async function uploadFiles() {
             return;
         }
 
+        // 创建表单数据上传文件
         const formData = new FormData();
         formData.append('category', category);
         
@@ -3850,23 +3853,148 @@ async function uploadFiles() {
         }
 
         const apiBase = (location.origin && location.origin.startsWith('http') ? location.origin : 'http://localhost:3000') + '/api';
-        const resp = await fetch(`${apiBase}/upload`, {
+        
+        // 先上传文件
+        const uploadResp = await fetch(`${apiBase}/upload`, {
             method: 'POST',
             body: formData
         });
-        if (!resp.ok) {
+        
+        if (!uploadResp.ok) {
             throw new Error('上传失败');
         }
-        const data = await resp.json();
-        if (resultEl) {
-            resultEl.textContent = `上传成功，共 ${data.files?.length || 0} 个文件`;
+        
+        const uploadData = await uploadResp.json();
+        
+        // 保存文件信息到数据库
+        if (uploadData.files && uploadData.files.length > 0) {
+            for (let i = 0; i < uploadData.files.length; i++) {
+                const fileInfo = uploadData.files[i];
+                const file = files[i];
+                
+                // 构建文件数据
+                const fileData = {
+                    title: fileInfo.name,
+                    name: fileInfo.name,
+                    fileType: getFileTypeFromName(fileInfo.name),
+                    size: formatFileSize(fileInfo.size),
+                    week: 1, // 默认第一周，用户可以后续修改
+                    subject: '', // 默认空，用户可以后续修改
+                    tags: []
+                };
+                
+                // 如果是教案，添加subtype
+                if (category === 'lesson_plans' && subtypeEl) {
+                    fileData.subtype = subtypeEl.value;
+                }
+                
+                // 保存到数据库
+                await fetch(`${apiBase}/upload/save-file`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        category: category,
+                        fileData: fileData
+                    })
+                });
+            }
         }
+        
+        if (resultEl) {
+            resultEl.textContent = `上传成功，共 ${uploadData.files?.length || 0} 个文件`;
+        }
+        
         hideUploadModal();
         alert('上传成功');
+        
+        // 重新加载文件数据
+        if (window.learningPlatform) {
+            await window.learningPlatform.loadFileData();
+        }
     } catch (err) {
         console.error(err);
         alert('上传失败，请检查服务器是否已启动 (npm start)');
     }
+}
+
+// 根据文件名获取文件类型
+function getFileTypeFromName(fileName) {
+    const ext = fileName.split('.').pop().toLowerCase();
+    const typeMap = {
+        'pdf': 'pdf',
+        'doc': 'doc',
+        'docx': 'docx',
+        'txt': 'txt',
+        'jpg': 'jpg',
+        'jpeg': 'jpeg',
+        'png': 'png',
+        'gif': 'gif',
+        'mp4': 'video',
+        'avi': 'video',
+        'mp3': 'audio',
+        'wav': 'audio',
+        'zip': 'zip',
+        'rar': 'rar'
+    };
+    return typeMap[ext] || 'file';
+}
+
+// 格式化文件大小
+function formatFileSize(bytes) {
+    if (bytes < 1024) {
+        return bytes + 'B';
+    } else if (bytes < 1024 * 1024) {
+        return (bytes / 1024).toFixed(1) + 'KB';
+    } else {
+        return (bytes / (1024 * 1024)).toFixed(1) + 'MB';
+    }
+}
+
+// 文件删除功能
+async function deleteFile(category, fileId, fileName) {
+    if (!confirm(`确定要删除文件 "${fileName}" 吗？`)) {
+        return;
+    }
+    
+    try {
+        const apiBase = (location.origin && location.origin.startsWith('http') ? location.origin : 'http://localhost:3000') + '/api';
+        
+        const resp = await fetch(`${apiBase}/upload/delete-file/${category}/${fileId}`, {
+            method: 'DELETE'
+        });
+        
+        if (!resp.ok) {
+            throw new Error('删除失败');
+        }
+        
+        const data = await resp.json();
+        
+        if (data.success) {
+            alert('删除成功');
+            
+            // 重新加载文件数据
+            if (window.learningPlatform) {
+                await window.learningPlatform.loadFileData();
+            }
+        } else {
+            alert('删除失败');
+        }
+    } catch (error) {
+        console.error('删除文件失败:', error);
+        alert('删除失败，请检查服务器是否已启动');
+    }
+}
+
+// 文件查看功能
+function viewFile(category, fileId) {
+    alert('查看功能待实现');
+}
+
+// 文件下载功能
+function downloadFile(category, fileId, fileName) {
+    alert('下载功能待实现');
 }
 
 // 历史对话相关全局函数

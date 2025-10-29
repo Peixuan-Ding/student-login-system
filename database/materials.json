@@ -1,23 +1,4 @@
 {
-  "materials": [
-    {
-      "id": "mat_001",
-      "title": "小学数学教材第一章",
-      "category": "materials",
-      "fileType": "pdf",
-      "size": "2.5MB",
-      "uploadDate": "2024-01-01T00:00:00.000Z",
-      "uploadedBy": "12345678"
-    },
-    {
-      "id": "mat_002",
-      "title": "语文阅读材料",
-      "category": "materials",
-      "fileType": "docx",
-      "size": "1.2MB",
-      "uploadDate": "2024-01-15T00:00:00.000Z",
-      "uploadedBy": "20240001"
-    }
-  ]
+  "materials": []
 }
 

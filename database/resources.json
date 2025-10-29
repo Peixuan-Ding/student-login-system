@@ -1,25 +1,4 @@
 {
-  "resources": [
-    {
-      "id": "res_001",
-      "title": "小学数学题库",
-      "category": "resources",
-      "fileType": "pdf",
-      "size": "5.3MB",
-      "description": "包含各年级数学练习题和答案",
-      "uploadDate": "2024-09-01T00:00:00.000Z",
-      "downloadCount": 156
-    },
-    {
-      "id": "res_002",
-      "title": "英语单词表",
-      "category": "resources",
-      "fileType": "xlsx",
-      "size": "800KB",
-      "description": "小学必背英语单词汇总",
-      "uploadDate": "2024-09-15T00:00:00.000Z",
-      "downloadCount": 89
-    }
-  ]
+  "resources": []
 }
 
