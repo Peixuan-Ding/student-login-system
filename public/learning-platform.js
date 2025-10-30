@@ -84,7 +84,7 @@ class LearningPlatform {
     async loadFileData() {
         try {
             // 加载教材数据
-            const materialsRes = await fetch('/api/content/materials');
+            const materialsRes = await fetch('/api/materials');
             const materialsData = await materialsRes.json();
             this.textbookData = (materialsData.materials || []).map(file => ({
                 id: file.id,
@@ -98,7 +98,7 @@ class LearningPlatform {
             }));
 
             // 加载教案数据
-            const lessonPlansRes = await fetch('/api/content/lesson-plans');
+            const lessonPlansRes = await fetch('/api/lesson-plans');
             const lessonPlansData = await lessonPlansRes.json();
             this.lessonPlanData = (lessonPlansData.lessonPlans || []).map(file => ({
                 id: file.id,
@@ -113,17 +113,32 @@ class LearningPlatform {
             }));
 
             // 加载资源数据
-            const resourcesRes = await fetch('/api/content/resources');
+            const resourcesRes = await fetch('/api/resources');
+            if (!resourcesRes.ok) {
+                console.error('加载资源数据失败，状态码:', resourcesRes.status);
+                throw new Error(`加载资源数据失败: ${resourcesRes.status}`);
+            }
             const resourcesData = await resourcesRes.json();
-            this.resourceData = (resourcesData.resources || []).map(file => ({
+            console.log('加载的资源数据:', resourcesData);
+            console.log('resources 数组:', resourcesData.resources);
+            console.log('resources 长度:', resourcesData.resources?.length || 0);
+            
+            this.resourceData = (resourcesData.resources || []).map(file => {
+                const mapped = {
                 id: file.id,
                 name: file.title || file.name,
-                type: file.fileType?.toUpperCase() || 'FILE',
-                originalType: file.type || file.originalType || 'file',
+                    type: (file.fileType || 'file').toUpperCase(),
+                    originalType: file.fileType || 'file',
                 size: file.size || '0MB',
-                date: new Date(file.uploadDate).toLocaleDateString('zh-CN'),
-                iconClass: file.iconClass || 'file'
-            }));
+                    date: file.uploadDate ? new Date(file.uploadDate).toLocaleDateString('zh-CN') : new Date().toLocaleDateString('zh-CN'),
+                    iconClass: file.iconClass || getIconClassFromFileType(file.fileType || 'file'),
+                    tags: file.tags || []
+                };
+                console.log('映射的文件:', mapped);
+                return mapped;
+            });
+            console.log('处理后的资源数据:', this.resourceData);
+            console.log('resourceData 长度:', this.resourceData.length);
 
             // 更新UI
             this.refreshCurrentView();
@@ -135,15 +150,9 @@ class LearningPlatform {
     // 刷新当前视图
     refreshCurrentView() {
         if (this.currentSection === 'textbooks') {
-            if (this.currentView === 'weekly') {
-                this.loadWeeklyContent();
-            } else {
-                this.loadCategoryContent();
-            }
+            this.loadTextbookContent();
         } else if (this.currentSection === 'lessonPlans') {
-            if (this.currentView === 'weekly') {
-                loadLessonPlanWeeklyContent();
-            }
+            this.loadLessonPlanContent();
         } else if (this.currentSection === 'resources') {
             this.loadResourceContent();
         }
@@ -281,19 +290,36 @@ class LearningPlatform {
             }, 100);
         }
 
+        // 如果是课程页面（探索页面中的courses），初始化课程视图
+        if (sectionId === 'courses') {
+            // 确保课程视图加载
+            setTimeout(() => {
+                loadCourseWeeklyContent();
+            }, 100);
+        }
+
         // 如果是教材页面，初始化教材视图
         if (sectionId === 'textbooks') {
-            this.initTextbookView();
+            // 异步初始化，确保数据已加载
+            this.initTextbookView().catch(err => {
+                console.error('初始化教材视图失败:', err);
+            });
         }
 
         // 如果是教案页面，初始化教案视图
         if (sectionId === 'lessonPlans') {
-            this.initLessonPlanView();
+            // 异步初始化，确保数据已加载
+            this.initLessonPlanView().catch(err => {
+                console.error('初始化教案视图失败:', err);
+            });
         }
 
         // 如果是个人知识库页面，初始化资源视图
         if (sectionId === 'resources') {
-            this.initResourceView();
+            // 异步初始化，确保数据已加载
+            this.initResourceView().catch(err => {
+                console.error('初始化资源视图失败:', err);
+            });
         }
     }
 
@@ -1981,6 +2007,18 @@ ${content}
             statNumbers[0].textContent = checkedDays;
             statNumbers[1].textContent = `${checkRate}%`;
         }
+
+        // 更新进度条
+        const bar = document.getElementById('checkRateBar');
+        if (bar) {
+            bar.style.width = `${checkRate}%`;
+        }
+
+        // 同步更新功能卡片上的概览信息
+        const cardDays = document.getElementById('calendarCardDays');
+        const cardRate = document.getElementById('calendarCardRate');
+        if (cardDays) cardDays.textContent = String(checkedDays);
+        if (cardRate) cardRate.textContent = `${checkRate}%`;
     }
 
     previousMonth() {
@@ -2904,7 +2942,7 @@ ${content}
                         <button class="btn btn-secondary btn-sm" title="下载" onclick="downloadFile('textbook', ${file.id}, '${file.name}')">
                             <i class="fas fa-download"></i>
                         </button>
-                        <button class="btn btn-danger btn-sm" title="删除" onclick="deleteFile('textbook', ${file.id}, '${file.name}')">
+                        <button class="btn btn-danger btn-sm" title="删除" onclick="deleteFile('materials', '${file.id}', '${(file.name || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -2918,6 +2956,19 @@ ${content}
 
     loadCategoryContent() {
         const categoryContent = document.getElementById('category-content');
+        
+        // 如果没有数据，显示空状态
+        if (!this.textbookData || this.textbookData.length === 0) {
+            categoryContent.innerHTML = `
+                <div style="padding: 60px 20px; text-align: center; color: #6b7280;">
+                    <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+                    <p>暂无教材文件</p>
+                    <p style="font-size: 14px; margin-top: 8px;">点击上方"上传教材"按钮添加文件</p>
+                </div>
+            `;
+            return;
+        }
+        
         let html = `
             <div class="file-list">
                 <div class="file-list-header">
@@ -2955,7 +3006,7 @@ ${content}
                         <button class="btn btn-secondary btn-sm" title="下载" onclick="downloadFile('textbook', ${file.id}, '${file.name}')">
                             <i class="fas fa-download"></i>
                         </button>
-                        <button class="btn btn-danger btn-sm" title="删除" onclick="deleteFile('textbook', ${file.id}, '${file.name}')">
+                        <button class="btn btn-danger btn-sm" title="删除" onclick="deleteFile('materials', '${file.id}', '${(file.name || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -3037,47 +3088,111 @@ ${content}
         weekInput.value = '';
     }
 
-    initTextbookView() {
+    async initTextbookView() {
         // 初始化教材视图
-        if (this.currentView === 'weekly') {
-            this.loadWeeklyContent();
-        } else {
-            this.loadCategoryContent();
+        // 确保数据已加载（如果还没有加载）
+        if (!this.textbookData || this.textbookData.length === 0) {
+            console.log('教材数据未加载，先加载数据...');
+            await this.loadFileData();
         }
+        this.loadTextbookContent();
     }
 
-    initLessonPlanView() {
+    async initLessonPlanView() {
         // 初始化教案视图
-        // 检查当前视图是周视图还是分类视图
-        const weeklyView = document.getElementById('lesson-plan-weekly-view');
-        if (weeklyView && weeklyView.style.display !== 'none') {
-            loadLessonPlanWeeklyContent();
-        } else {
-            loadLessonPlanCategoryContent();
+        // 确保数据已加载（如果还没有加载）
+        if (!this.lessonPlanData || this.lessonPlanData.length === 0) {
+            console.log('教案数据未加载，先加载数据...');
+            await this.loadFileData();
         }
+        this.loadLessonPlanContent();
     }
 
-    initResourceView() {
+    async initResourceView() {
         // 初始化个人知识库视图
+        // 确保数据已加载（如果还没有加载）
+        if (!this.resourceData || this.resourceData.length === 0) {
+            console.log('资源数据未加载，先加载数据...');
+            await this.loadFileData();
+        }
         this.loadResourceContent();
     }
 
     // 加载个人知识库内容
     loadResourceContent() {
-        const resourceList = document.querySelector('#resources .file-list');
-        if (!resourceList) return;
+        const resourceList = document.getElementById('resourceFileList');
+        if (!resourceList) {
+            console.warn('resourceFileList 元素未找到');
+            return;
+        }
 
-        if (!this.resourceData || this.resourceData.length === 0) {
+        console.log('加载资源内容，当前 resourceData:', this.resourceData);
+        console.log('resourceData 长度:', this.resourceData?.length || 0);
+
+        // 更新统计信息
+        this.updateResourceStats();
+
+        // 获取当前筛选和搜索条件
+        const currentFilter = window.currentResourceFilter || 'all';
+        const searchTerm = (document.getElementById('resourceSearch')?.value || '').toLowerCase();
+
+        // 过滤数据
+        let filteredData = this.resourceData || [];
+        
+        console.log('过滤前的数据:', filteredData.length);
+        
+        // 按类型筛选
+        if (currentFilter !== 'all') {
+            filteredData = filteredData.filter(resource => {
+                const type = (resource.type || resource.originalType || '').toLowerCase();
+                if (currentFilter === 'pdf') return type.includes('pdf');
+                if (currentFilter === 'image') return type.includes('image') || type.includes('jpg') || type.includes('png') || type.includes('jpeg') || type.includes('gif');
+                if (currentFilter === 'video') return type.includes('video') || type.includes('mp4') || type.includes('avi') || type.includes('mov');
+                if (currentFilter === 'audio') return type.includes('audio') || type.includes('mp3') || type.includes('wav');
+                if (currentFilter === 'document') return type.includes('doc') || type.includes('docx') || type.includes('txt');
+                return true;
+            });
+        }
+
+        // 按搜索词筛选
+        if (searchTerm) {
+            filteredData = filteredData.filter(resource => 
+                (resource.name || '').toLowerCase().includes(searchTerm)
+            );
+        }
+
+        // 显示/隐藏清空搜索按钮
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+        if (clearSearchBtn) {
+            clearSearchBtn.style.display = searchTerm ? 'block' : 'none';
+        }
+
+        console.log('过滤后的数据:', filteredData);
+        console.log('过滤后的数据长度:', filteredData.length);
+        
+        // 显示空状态
+        if (filteredData.length === 0) {
+            const emptyMessage = searchTerm || currentFilter !== 'all' 
+                ? '没有找到符合条件的文件' 
+                : '暂无资源文件';
+            const emptyHint = searchTerm || currentFilter !== 'all'
+                ? '尝试调整搜索条件或筛选条件'
+                : '点击上方上传区域添加文件到知识库';
+            
+            console.log('显示空状态:', { emptyMessage, emptyHint, searchTerm, currentFilter });
             resourceList.innerHTML = `
-                <div style="padding: 60px 20px; text-align: center; color: #6b7280;">
-                    <i class="fas fa-folder-open" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
-                    <p>暂无资源文件</p>
-                    <p style="font-size: 14px; margin-top: 8px;">点击上方"上传资源"按钮添加文件</p>
+                <div class="empty-resource-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>${emptyMessage}</p>
+                    <p class="empty-hint">${emptyHint}</p>
                 </div>
             `;
             return;
         }
 
+        console.log('开始渲染文件列表，文件数:', filteredData.length);
+
+        // 渲染文件列表
         let html = `
             <div class="file-list-header">
                 <div class="file-name">文件名</div>
@@ -3088,18 +3203,35 @@ ${content}
             </div>
         `;
 
-        this.resourceData.forEach(resource => {
-            const iconClass = `fa-${resource.iconClass}`;
+        filteredData.forEach(resource => {
+            // 获取图标类名
+            let iconClass = 'fas fa-file';
+            if (resource.iconClass) {
+                iconClass = resource.iconClass.startsWith('fa-') || resource.iconClass.startsWith('fas ') 
+                    ? `fas ${resource.iconClass.replace(/^fa-/, 'fa-')}` 
+                    : `fas fa-${resource.iconClass}`;
+            } else if (resource.type || resource.originalType) {
+                const fileType = (resource.type || resource.originalType || '').toLowerCase();
+                if (fileType.includes('pdf')) iconClass = 'fas fa-file-pdf';
+                else if (fileType.includes('doc')) iconClass = 'fas fa-file-word';
+                else if (fileType.includes('image') || fileType.includes('jpg') || fileType.includes('png')) iconClass = 'fas fa-file-image';
+                else if (fileType.includes('video') || fileType.includes('mp4')) iconClass = 'fas fa-file-video';
+                else if (fileType.includes('audio') || fileType.includes('mp3')) iconClass = 'fas fa-file-audio';
+                else if (fileType.includes('zip') || fileType.includes('rar')) iconClass = 'fas fa-file-archive';
+            }
+            
+            const bgClass = this.getFileIconBgClass(resource.type || 'FILE');
+            
             html += `
-                <div class="file-list-item">
+                <div class="file-list-item" data-resource-id="${resource.id}">
                     <div class="file-name">
-                        <div class="file-icon">
-                            <i class="fas ${iconClass}"></i>
+                        <div class="file-icon ${bgClass}">
+                            <i class="${iconClass}"></i>
                         </div>
                         <div class="file-details">
                             <h4>${resource.name}</h4>
                             <div class="file-tags">
-                                ${resource.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                                ${(resource.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('')}
                             </div>
                         </div>
                     </div>
@@ -3113,7 +3245,7 @@ ${content}
                         <button class="btn btn-secondary btn-sm" title="下载" onclick="downloadResource(${resource.id})">
                             <i class="fas fa-download"></i>
                         </button>
-                        <button class="btn btn-danger btn-sm" title="删除" onclick="deleteFile('resource', ${resource.id}, '${resource.name}')">
+                        <button class="btn btn-danger btn-sm" title="删除" onclick="deleteFile('resources', '${resource.id}', '${(resource.name || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -3121,7 +3253,427 @@ ${content}
             `;
         });
 
+        console.log('渲染的HTML长度:', html.length);
+        console.log('设置 resourceList.innerHTML');
         resourceList.innerHTML = html;
+        console.log('文件列表已更新，当前元素子节点数:', resourceList.children.length);
+    }
+
+    // 加载教材内容
+    loadTextbookContent() {
+        const textbookList = document.getElementById('textbookFileList');
+        if (!textbookList) {
+            console.warn('textbookFileList 元素未找到');
+            return;
+        }
+
+        console.log('加载教材内容，当前 textbookData:', this.textbookData);
+
+        // 获取当前筛选和搜索条件
+        const currentFilter = window.currentTextbookFilter || 'all';
+        const searchTerm = (document.getElementById('textbookSearch')?.value || '').toLowerCase();
+
+        // 过滤数据
+        let filteredData = this.textbookData || [];
+        
+        // 按类型筛选
+        if (currentFilter !== 'all') {
+            filteredData = filteredData.filter(file => {
+                const type = (file.type || '').toLowerCase();
+                if (currentFilter === 'pdf') return type.includes('pdf');
+                if (currentFilter === 'document') return type.includes('doc') || type.includes('docx');
+                if (currentFilter === 'image') return type.includes('image') || type.includes('jpg') || type.includes('png');
+                return true;
+            });
+        }
+
+        // 按搜索词筛选
+        if (searchTerm) {
+            filteredData = filteredData.filter(file => 
+                (file.name || '').toLowerCase().includes(searchTerm)
+            );
+        }
+
+        // 显示/隐藏清空搜索按钮
+        const clearSearchBtn = document.getElementById('clearTextbookSearchBtn');
+        if (clearSearchBtn) {
+            clearSearchBtn.style.display = searchTerm ? 'block' : 'none';
+        }
+
+        // 显示空状态
+        if (filteredData.length === 0) {
+            const emptyMessage = searchTerm || currentFilter !== 'all' 
+                ? '没有找到符合条件的文件' 
+                : '暂无教材文件';
+            const emptyHint = searchTerm || currentFilter !== 'all'
+                ? '尝试调整搜索条件或筛选条件'
+                : '点击上方上传区域添加教材文件';
+            
+            textbookList.innerHTML = `
+                <div class="empty-resource-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>${emptyMessage}</p>
+                    <p class="empty-hint">${emptyHint}</p>
+                </div>
+            `;
+            return;
+        }
+
+        // 渲染文件列表
+        let html = `
+            <div class="file-list-header">
+                <div class="file-name">文件名</div>
+                <div class="file-type">类型</div>
+                <div class="file-size">大小</div>
+                <div class="file-date">上传时间</div>
+                <div class="file-actions-header">操作</div>
+            </div>
+        `;
+
+        filteredData.forEach(file => {
+            let iconClass = 'fas fa-file';
+            const fileType = (file.type || '').toLowerCase();
+            if (fileType.includes('pdf')) iconClass = 'fas fa-file-pdf';
+            else if (fileType.includes('doc')) iconClass = 'fas fa-file-word';
+            else if (fileType.includes('image') || fileType.includes('jpg') || fileType.includes('png')) iconClass = 'fas fa-file-image';
+            
+            const bgClass = this.getFileIconBgClass(file.type || 'FILE');
+            
+            html += `
+                <div class="file-list-item" data-file-id="${file.id}">
+                    <div class="file-name">
+                        <div class="file-icon ${bgClass}">
+                            <i class="${iconClass}"></i>
+                        </div>
+                        <div class="file-details">
+                            <h4>${file.name}</h4>
+                            ${file.subject ? `<div class="file-tags"><span class="tag">${file.subject}</span></div>` : ''}
+                        </div>
+                    </div>
+                    <div class="file-type">${file.type || 'FILE'}</div>
+                    <div class="file-size">${file.size || '0MB'}</div>
+                    <div class="file-date">${file.date || ''}</div>
+                    <div class="file-actions">
+                        <button class="btn btn-primary btn-sm" title="查看" onclick="viewFile('materials', '${file.id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-secondary btn-sm" title="下载" onclick="downloadFile('materials', '${file.id}')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" title="删除" onclick="deleteFile('materials', '${file.id}', '${(file.name || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        textbookList.innerHTML = html;
+    }
+
+    // 加载教案内容
+    loadLessonPlanContent() {
+        const lessonPlanList = document.getElementById('lessonPlanFileList');
+        if (!lessonPlanList) {
+            console.warn('lessonPlanFileList 元素未找到');
+            return;
+        }
+
+        console.log('加载教案内容，当前 lessonPlanData:', this.lessonPlanData);
+
+        // 获取当前筛选和搜索条件
+        const currentFilter = window.currentLessonPlanFilter || 'all';
+        const searchTerm = (document.getElementById('lessonPlanSearch')?.value || '').toLowerCase();
+
+        // 过滤数据
+        let filteredData = this.lessonPlanData || [];
+        
+        // 按类型筛选
+        if (currentFilter !== 'all') {
+            filteredData = filteredData.filter(file => {
+                const type = (file.type || '').toLowerCase();
+                if (currentFilter === 'pdf') return type.includes('pdf');
+                if (currentFilter === 'document') return type.includes('doc') || type.includes('docx');
+                if (currentFilter === 'ppt') return type.includes('ppt') || type.includes('powerpoint');
+                return true;
+            });
+        }
+
+        // 按搜索词筛选
+        if (searchTerm) {
+            filteredData = filteredData.filter(file => 
+                (file.name || '').toLowerCase().includes(searchTerm)
+            );
+        }
+
+        // 显示/隐藏清空搜索按钮
+        const clearSearchBtn = document.getElementById('clearLessonPlanSearchBtn');
+        if (clearSearchBtn) {
+            clearSearchBtn.style.display = searchTerm ? 'block' : 'none';
+        }
+
+        // 显示空状态
+        if (filteredData.length === 0) {
+            const emptyMessage = searchTerm || currentFilter !== 'all' 
+                ? '没有找到符合条件的文件' 
+                : '暂无教案文件';
+            const emptyHint = searchTerm || currentFilter !== 'all'
+                ? '尝试调整搜索条件或筛选条件'
+                : '点击上方上传区域添加教案文件';
+            
+            lessonPlanList.innerHTML = `
+                <div class="empty-resource-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>${emptyMessage}</p>
+                    <p class="empty-hint">${emptyHint}</p>
+                </div>
+            `;
+            return;
+        }
+
+        // 渲染文件列表
+        let html = `
+            <div class="file-list-header">
+                <div class="file-name">文件名</div>
+                <div class="file-type">类型</div>
+                <div class="file-size">大小</div>
+                <div class="file-date">上传时间</div>
+                <div class="file-actions-header">操作</div>
+            </div>
+        `;
+
+        filteredData.forEach(file => {
+            let iconClass = 'fas fa-file';
+            const fileType = (file.type || '').toLowerCase();
+            if (fileType.includes('pdf')) iconClass = 'fas fa-file-pdf';
+            else if (fileType.includes('doc')) iconClass = 'fas fa-file-word';
+            else if (fileType.includes('ppt')) iconClass = 'fas fa-file-powerpoint';
+            
+            const bgClass = this.getFileIconBgClass(file.type || 'FILE');
+            
+            html += `
+                <div class="file-list-item" data-file-id="${file.id}">
+                    <div class="file-name">
+                        <div class="file-icon ${bgClass}">
+                            <i class="${iconClass}"></i>
+                        </div>
+                        <div class="file-details">
+                            <h4>${file.name}</h4>
+                            ${file.subject ? `<div class="file-tags"><span class="tag">${file.subject}</span></div>` : ''}
+                            ${file.subtype ? `<div class="file-tags"><span class="tag">${file.subtype}</span></div>` : ''}
+                        </div>
+                    </div>
+                    <div class="file-type">${file.type || 'FILE'}</div>
+                    <div class="file-size">${file.size || '0KB'}</div>
+                    <div class="file-date">${file.date || ''}</div>
+                    <div class="file-actions">
+                        <button class="btn btn-primary btn-sm" title="查看" onclick="viewFile('lesson_plans', '${file.id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-secondary btn-sm" title="下载" onclick="downloadFile('lesson_plans', '${file.id}')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" title="删除" onclick="deleteFile('lesson_plans', '${file.id}', '${(file.name || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        lessonPlanList.innerHTML = html;
+    }
+
+    // 更新教材统计信息
+    updateTextbookStats() {
+        const textbooks = this.textbookData || [];
+        
+        // 总文件数
+        const totalCount = textbooks.length;
+        const totalCountEl = document.getElementById('textbooksTotalCount');
+        if (totalCountEl) {
+            totalCountEl.textContent = totalCount;
+        }
+
+        // 计算总大小
+        let totalSizeBytes = 0;
+        textbooks.forEach(t => {
+            const size = t.size || '0';
+            if (typeof size === 'string') {
+                const match = size.match(/(\d+\.?\d*)\s*(KB|MB|GB|B)/i);
+                if (match) {
+                    const value = parseFloat(match[1]);
+                    const unit = match[2].toUpperCase();
+                    if (unit === 'KB') totalSizeBytes += value * 1024;
+                    else if (unit === 'MB') totalSizeBytes += value * 1024 * 1024;
+                    else if (unit === 'GB') totalSizeBytes += value * 1024 * 1024 * 1024;
+                    else totalSizeBytes += value;
+                }
+            }
+        });
+        
+        const totalSizeEl = document.getElementById('textbooksTotalSize');
+        if (totalSizeEl) {
+            let sizeText = '0 B';
+            if (totalSizeBytes >= 1024 * 1024 * 1024) {
+                sizeText = (totalSizeBytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+            } else if (totalSizeBytes >= 1024 * 1024) {
+                sizeText = (totalSizeBytes / (1024 * 1024)).toFixed(2) + ' MB';
+            } else if (totalSizeBytes >= 1024) {
+                sizeText = (totalSizeBytes / 1024).toFixed(2) + ' KB';
+            } else {
+                sizeText = totalSizeBytes + ' B';
+            }
+            totalSizeEl.textContent = sizeText;
+        }
+
+        // PDF数量
+        const pdfCount = textbooks.filter(t => {
+            const type = (t.type || '').toLowerCase();
+            return type.includes('pdf');
+        }).length;
+        const pdfCountEl = document.getElementById('textbooksPdfCount');
+        if (pdfCountEl) {
+            pdfCountEl.textContent = pdfCount;
+        }
+
+        // 文档数量
+        const docCount = textbooks.filter(t => {
+            const type = (t.type || '').toLowerCase();
+            return type.includes('doc') || type.includes('docx');
+        }).length;
+        const docCountEl = document.getElementById('textbooksDocCount');
+        if (docCountEl) {
+            docCountEl.textContent = docCount;
+        }
+    }
+
+    // 更新教案统计信息
+    updateLessonPlanStats() {
+        const lessonPlans = this.lessonPlanData || [];
+        
+        // 总文件数
+        const totalCount = lessonPlans.length;
+        const totalCountEl = document.getElementById('lessonPlansTotalCount');
+        if (totalCountEl) {
+            totalCountEl.textContent = totalCount;
+        }
+
+        // 计算总大小
+        let totalSizeBytes = 0;
+        lessonPlans.forEach(lp => {
+            const size = lp.size || '0';
+            if (typeof size === 'string') {
+                const match = size.match(/(\d+\.?\d*)\s*(KB|MB|GB|B)/i);
+                if (match) {
+                    const value = parseFloat(match[1]);
+                    const unit = match[2].toUpperCase();
+                    if (unit === 'KB') totalSizeBytes += value * 1024;
+                    else if (unit === 'MB') totalSizeBytes += value * 1024 * 1024;
+                    else if (unit === 'GB') totalSizeBytes += value * 1024 * 1024 * 1024;
+                    else totalSizeBytes += value;
+                }
+            }
+        });
+        
+        const totalSizeEl = document.getElementById('lessonPlansTotalSize');
+        if (totalSizeEl) {
+            let sizeText = '0 B';
+            if (totalSizeBytes >= 1024 * 1024 * 1024) {
+                sizeText = (totalSizeBytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+            } else if (totalSizeBytes >= 1024 * 1024) {
+                sizeText = (totalSizeBytes / (1024 * 1024)).toFixed(2) + ' MB';
+            } else if (totalSizeBytes >= 1024) {
+                sizeText = (totalSizeBytes / 1024).toFixed(2) + ' KB';
+            } else {
+                sizeText = totalSizeBytes + ' B';
+            }
+            totalSizeEl.textContent = sizeText;
+        }
+
+        // Word文档数量
+        const docCount = lessonPlans.filter(lp => {
+            const type = (lp.type || '').toLowerCase();
+            return type.includes('doc') || type.includes('docx');
+        }).length;
+        const docCountEl = document.getElementById('lessonPlansDocCount');
+        if (docCountEl) {
+            docCountEl.textContent = docCount;
+        }
+
+        // PDF数量
+        const pdfCount = lessonPlans.filter(lp => {
+            const type = (lp.type || '').toLowerCase();
+            return type.includes('pdf');
+        }).length;
+        const pdfCountEl = document.getElementById('lessonPlansPdfCount');
+        if (pdfCountEl) {
+            pdfCountEl.textContent = pdfCount;
+        }
+    }
+
+    // 更新资源统计信息
+    updateResourceStats() {
+        const resources = this.resourceData || [];
+        
+        // 总文件数
+        const totalCount = resources.length;
+        const totalCountEl = document.getElementById('totalFilesCount');
+        if (totalCountEl) {
+            totalCountEl.textContent = totalCount;
+        }
+
+        // 计算总大小
+        let totalSizeBytes = 0;
+        resources.forEach(r => {
+            const size = r.size || '0';
+            if (typeof size === 'string') {
+                const match = size.match(/(\d+\.?\d*)\s*(KB|MB|GB|B)/i);
+                if (match) {
+                    const value = parseFloat(match[1]);
+                    const unit = match[2].toUpperCase();
+                    if (unit === 'KB') totalSizeBytes += value * 1024;
+                    else if (unit === 'MB') totalSizeBytes += value * 1024 * 1024;
+                    else if (unit === 'GB') totalSizeBytes += value * 1024 * 1024 * 1024;
+                    else totalSizeBytes += value;
+                }
+            }
+        });
+        
+        const totalSizeEl = document.getElementById('totalSize');
+        if (totalSizeEl) {
+            let sizeText = '0 B';
+            if (totalSizeBytes >= 1024 * 1024 * 1024) {
+                sizeText = (totalSizeBytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+            } else if (totalSizeBytes >= 1024 * 1024) {
+                sizeText = (totalSizeBytes / (1024 * 1024)).toFixed(2) + ' MB';
+            } else if (totalSizeBytes >= 1024) {
+                sizeText = (totalSizeBytes / 1024).toFixed(2) + ' KB';
+            } else {
+                sizeText = totalSizeBytes + ' B';
+            }
+            totalSizeEl.textContent = sizeText;
+        }
+
+        // 图片数量
+        const imageCount = resources.filter(r => {
+            const type = (r.type || r.originalType || '').toLowerCase();
+            return type.includes('image') || type.includes('jpg') || type.includes('png') || type.includes('jpeg') || type.includes('gif');
+        }).length;
+        const imageCountEl = document.getElementById('imageCount');
+        if (imageCountEl) {
+            imageCountEl.textContent = imageCount;
+        }
+
+        // 视频数量
+        const videoCount = resources.filter(r => {
+            const type = (r.type || r.originalType || '').toLowerCase();
+            return type.includes('video') || type.includes('mp4') || type.includes('avi') || type.includes('mov');
+        }).length;
+        const videoCountEl = document.getElementById('videoCount');
+        if (videoCountEl) {
+            videoCountEl.textContent = videoCount;
+        }
     }
 
     // 初始化Padlet-学生的课程内容
@@ -3151,19 +3703,29 @@ ${content}
 
         // 更新教材文件列表
         const textbookFilesContainer = moduleElement.querySelector('.course-files:first-of-type .file-list-mini');
-        if (textbookFilesContainer && courseTextbooks.length > 0) {
+        if (textbookFilesContainer) {
+            if (courseTextbooks.length > 0) {
             textbookFilesContainer.innerHTML = courseTextbooks.map(file => this.createFileItemMini(file)).join('');
+            } else {
+                // 没有文件时显示空状态
+                textbookFilesContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #9ca3af; font-size: 12px;">暂无教材</div>';
+            }
         }
 
         // 更新教案文件列表
         const lessonPlanFilesContainer = moduleElement.querySelector('.course-files:last-of-type .file-list-mini');
-        if (lessonPlanFilesContainer && courseLessonPlans.length > 0) {
+        if (lessonPlanFilesContainer) {
+            if (courseLessonPlans.length > 0) {
             lessonPlanFilesContainer.innerHTML = courseLessonPlans.map(file => this.createFileItemMini(file)).join('');
+            } else {
+                // 没有文件时显示空状态
+                lessonPlanFilesContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #9ca3af; font-size: 12px;">暂无教案</div>';
+            }
         }
 
-        // 计算并更新进度
+        // 计算并更新进度（基于真实文件数量，不再使用假数据）
         const totalFiles = courseTextbooks.length + courseLessonPlans.length;
-        const progress = moduleIndex === 0 ? 65 : 0;
+        const progress = 0; // 不再使用假进度，实际进度应该基于完成情况计算
         const progressFill = moduleElement.querySelector('.progress-fill');
         const progressText = moduleElement.querySelector('.progress-text');
         
@@ -3402,11 +3964,13 @@ function switchCourseView(view) {
         categoryBtn.classList.remove('active');
         weeklyView.style.display = 'block';
         categoryView.style.display = 'none';
+        loadCourseWeeklyContent();
     } else {
         weeklyBtn.classList.remove('active');
         categoryBtn.classList.add('active');
         weeklyView.style.display = 'none';
         categoryView.style.display = 'block';
+        loadCourseCategoryContent();
     }
 }
 
@@ -3417,12 +3981,16 @@ function previousCourseWeek() {
     if (currentCourseWeek > 1) {
         currentCourseWeek--;
         document.getElementById('current-course-week-display').textContent = `第${currentCourseWeek}周`;
+        loadCourseWeeklyContent();
     }
 }
 
 function nextCourseWeek() {
+    if (currentCourseWeek < 16) {
     currentCourseWeek++;
     document.getElementById('current-course-week-display').textContent = `第${currentCourseWeek}周`;
+        loadCourseWeeklyContent();
+    }
 }
 
 function jumpToCourseWeek() {
@@ -3437,6 +4005,7 @@ function jumpToCourseWeek() {
     currentCourseWeek = targetWeek;
     document.getElementById('current-course-week-display').textContent = `第${currentCourseWeek}周`;
     weekInput.value = '';
+    loadCourseWeeklyContent();
 }
 
 function handleCourseWeekJumpKeyPress(event) {
@@ -3455,8 +4024,170 @@ function filterCourseFiles(type) {
         }
     });
     
-    // 这里可以添加实际的筛选逻辑
-    console.log('筛选课程文件类型:', type);
+    // 加载筛选后的文件列表
+    loadCourseCategoryContent(type);
+}
+
+// 加载课程周内容
+function loadCourseWeeklyContent() {
+    const weeklyContent = document.getElementById('course-weekly-content');
+    if (!weeklyContent) return;
+    
+    const platform = window.learningPlatform;
+    if (!platform) return;
+    
+    // 合并教材和教案数据
+    const weekFiles = [
+        ...platform.textbookData.filter(file => file.week === currentCourseWeek).map(file => ({...file, category: '教材'})),
+        ...platform.lessonPlanData.filter(file => file.week === currentCourseWeek).map(file => ({...file, category: '教案'}))
+    ];
+    
+    if (weekFiles.length === 0) {
+        weeklyContent.innerHTML = `
+            <div style="padding: 60px 20px; text-align: center; color: #6b7280;">
+                <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+                <p>第${currentCourseWeek}周暂无课程资料</p>
+                <p style="font-size: 14px; margin-top: 8px;">请上传文件后查看</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = `
+        <div class="file-list">
+            <div class="file-list-header">
+                <div class="file-name">文件名</div>
+                <div class="file-type">类型</div>
+                <div class="file-size">大小</div>
+                <div class="file-date">上传时间</div>
+                <div class="file-actions-header">操作</div>
+            </div>
+    `;
+    
+    weekFiles.forEach(file => {
+        const iconClass = platform.getFileIconClass(file.type);
+        const bgClass = platform.getFileIconBgClass(file.type);
+        html += `
+            <div class="file-list-item">
+                <div class="file-name">
+                    <div class="file-icon ${bgClass}">
+                        <i class="${iconClass}"></i>
+                    </div>
+                    <div class="file-details">
+                        <h4>${file.name}</h4>
+                        <div class="file-tags">
+                            <span class="tag">${file.category}</span>
+                            ${(file.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+                <div class="file-type">${file.type}</div>
+                <div class="file-size">${file.size}</div>
+                <div class="file-date">${file.date}</div>
+                <div class="file-actions">
+                    <button class="btn btn-primary btn-sm" title="查看" onclick="viewFile('${file.category === '教材' ? 'textbook' : 'lessonPlan'}', ${file.id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-secondary btn-sm" title="下载" onclick="downloadFile('${file.category === '教材' ? 'textbook' : 'lessonPlan'}', ${file.id}, '${file.name.replace(/'/g, "\\'")}')">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" title="删除" onclick="deleteFile('${file.category === '教材' ? 'materials' : 'lesson_plans'}', '${file.id}', '${(file.name || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    weeklyContent.innerHTML = html;
+}
+
+// 加载课程分类内容
+function loadCourseCategoryContent(type = 'all') {
+    const categoryContent = document.getElementById('course-category-content');
+    if (!categoryContent) return;
+    
+    const platform = window.learningPlatform;
+    if (!platform) return;
+    
+    // 合并所有文件数据
+    let allFiles = [
+        ...platform.textbookData.map(file => ({...file, category: '教材'})),
+        ...platform.lessonPlanData.map(file => ({...file, category: '教案'})),
+        ...platform.resourceData.map(file => ({...file, category: '资源'}))
+    ];
+    
+    // 根据类型筛选
+    if (type === 'textbook') {
+        allFiles = allFiles.filter(file => file.category === '教材');
+    } else if (type === 'lessonPlan') {
+        allFiles = allFiles.filter(file => file.category === '教案');
+    } else if (type === 'resource') {
+        allFiles = allFiles.filter(file => file.category === '资源');
+    }
+    // type === 'all' 时显示所有文件
+    
+    if (allFiles.length === 0) {
+        categoryContent.innerHTML = `
+            <div style="padding: 60px 20px; text-align: center; color: #6b7280;">
+                <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+                <p>暂无课程文件</p>
+                <p style="font-size: 14px; margin-top: 8px;">请上传文件后查看</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = `
+        <div class="file-list">
+            <div class="file-list-header">
+                <div class="file-name">文件名</div>
+                <div class="file-type">类型</div>
+                <div class="file-size">大小</div>
+                <div class="file-date">上传时间</div>
+                <div class="file-actions-header">操作</div>
+            </div>
+    `;
+    
+    allFiles.forEach(file => {
+        const iconClass = platform.getFileIconClass(file.type);
+        const bgClass = platform.getFileIconBgClass(file.type);
+        const categoryKey = file.category === '教材' ? 'materials' : file.category === '教案' ? 'lesson_plans' : 'resources';
+        html += `
+            <div class="file-list-item">
+                <div class="file-name">
+                    <div class="file-icon ${bgClass}">
+                        <i class="${iconClass}"></i>
+                    </div>
+                    <div class="file-details">
+                        <h4>${file.name}</h4>
+                        <div class="file-tags">
+                            <span class="tag">${file.category}</span>
+                            ${(file.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+                <div class="file-type">${file.type}</div>
+                <div class="file-size">${file.size}</div>
+                <div class="file-date">${file.date}</div>
+                <div class="file-actions">
+                    <button class="btn btn-primary btn-sm" title="查看" onclick="viewFile('${categoryKey}', ${file.id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-secondary btn-sm" title="下载" onclick="downloadFile('${categoryKey}', ${file.id}, '${file.name.replace(/'/g, "\\'")}')">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" title="删除" onclick="deleteFile('${categoryKey}', ${file.id}, '${file.name.replace(/'/g, "\\'")}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    categoryContent.innerHTML = html;
 }
 
 // 教案视图切换函数
@@ -3578,7 +4309,7 @@ function loadLessonPlanWeeklyContent() {
                     <button class="btn btn-secondary btn-sm" title="下载" onclick="downloadFile('lessonPlan', ${file.id}, '${file.name}')">
                         <i class="fas fa-download"></i>
                     </button>
-                    <button class="btn btn-danger btn-sm" title="删除" onclick="deleteFile('lessonPlan', ${file.id}, '${file.name}')">
+                    <button class="btn btn-danger btn-sm" title="删除" onclick="deleteFile('lesson_plans', '${file.id}', '${(file.name || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}')">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -3597,6 +4328,18 @@ function loadLessonPlanCategoryContent() {
     
     const platform = window.learningPlatform;
     if (!platform) return;
+    
+    // 如果没有数据，显示空状态
+    if (!platform.lessonPlanData || platform.lessonPlanData.length === 0) {
+        categoryContent.innerHTML = `
+            <div style="padding: 60px 20px; text-align: center; color: #6b7280;">
+                <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+                <p>暂无教案文件</p>
+                <p style="font-size: 14px; margin-top: 8px;">点击上方"上传教案"按钮添加文件</p>
+            </div>
+        `;
+        return;
+    }
     
     let html = `
         <div class="file-list" style="background: white; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden;">
@@ -3635,7 +4378,7 @@ function loadLessonPlanCategoryContent() {
                     <button class="btn btn-secondary btn-sm" title="下载" onclick="downloadFile('lessonPlan', ${file.id}, '${file.name}')">
                         <i class="fas fa-download"></i>
                     </button>
-                    <button class="btn btn-danger btn-sm" title="删除" onclick="deleteFile('lessonPlan', ${file.id}, '${file.name}')">
+                    <button class="btn btn-danger btn-sm" title="删除" onclick="deleteFile('lesson_plans', '${file.id}', '${(file.name || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}')">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -3860,24 +4603,67 @@ async function uploadFiles() {
             body: formData
         });
         
-        if (!uploadResp.ok) {
-            throw new Error('上传失败');
+        // 检查响应类型，确保是JSON
+        const contentType = uploadResp.headers.get('content-type');
+        let uploadData;
+        
+        // 先克隆响应，以便在需要时读取文本
+        const responseClone = uploadResp.clone();
+        
+        if (!contentType || !contentType.includes('application/json')) {
+            // 如果返回的不是JSON，读取文本以获取错误信息
+            const text = await responseClone.text();
+            console.error('服务器返回了非JSON响应:', text.substring(0, 500));
+            throw new Error(`服务器错误: 返回了 ${contentType || '未知类型'} 而不是JSON。这通常意味着服务器路由错误或文件处理失败。\n响应内容: ${text.substring(0, 200)}`);
         }
         
-        const uploadData = await uploadResp.json();
+        // 尝试解析JSON响应
+        try {
+            uploadData = await uploadResp.json();
+        } catch (parseError) {
+            // 如果JSON解析失败，尝试从克隆的响应中读取文本
+            try {
+                const text = await responseClone.text();
+                console.error('JSON解析失败，响应内容:', text.substring(0, 500));
+                throw new Error(`服务器返回了无效的JSON响应。这可能是文件处理过程中的错误。\n状态码: ${uploadResp.status}\n响应: ${text.substring(0, 200)}`);
+            } catch (textError) {
+                // 如果克隆的响应也已读取，直接抛出原始错误
+                throw new Error(`JSON解析失败: ${parseError.message}\n状态码: ${uploadResp.status}`);
+            }
+        }
+        
+        if (!uploadResp.ok) {
+            // 处理错误响应
+            throw new Error(uploadData.error || uploadData.message || `上传失败: HTTP ${uploadResp.status}`);
+        }
+        console.log('文件上传成功，准备保存到数据库:', uploadData);
+        // 记录最近一次上传提取的文本，供“新建我的专业导师”导入
+        if (uploadData && uploadData.extractedText) {
+            window.latestUploadedExtractedText = uploadData.extractedText;
+        }
         
         // 保存文件信息到数据库
+        let successes = [];
+        let errors = [];
+        
         if (uploadData.files && uploadData.files.length > 0) {
+            const savePromises = [];
+            
             for (let i = 0; i < uploadData.files.length; i++) {
                 const fileInfo = uploadData.files[i];
                 const file = files[i];
                 
                 // 构建文件数据
+                const fileType = getFileTypeFromName(fileInfo.name);
+                const iconClass = getIconClassFromFileType(fileType);
+                
                 const fileData = {
                     title: fileInfo.name,
                     name: fileInfo.name,
-                    fileType: getFileTypeFromName(fileInfo.name),
+                    fileType: fileType,
+                    iconClass: iconClass,
                     size: formatFileSize(fileInfo.size),
+                    filePath: fileInfo.path || null, // 保存文件路径
                     week: 1, // 默认第一周，用户可以后续修改
                     subject: '', // 默认空，用户可以后续修改
                     tags: []
@@ -3889,7 +4675,7 @@ async function uploadFiles() {
                 }
                 
                 // 保存到数据库
-                await fetch(`${apiBase}/upload/save-file`, {
+                const savePromise = fetch(`${apiBase}/upload/save-file`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -3898,24 +4684,127 @@ async function uploadFiles() {
                         category: category,
                         fileData: fileData
                     })
+                }).then(async (response) => {
+                    // 检查响应类型，确保是JSON
+                    const contentType = response.headers.get('content-type');
+                    let data;
+                    
+                    // 先克隆响应，以便在需要时读取文本
+                    const responseClone = response.clone();
+                    
+                    if (!contentType || !contentType.includes('application/json')) {
+                        // 如果返回的不是JSON，读取文本以获取错误信息
+                        const text = await responseClone.text();
+                        console.error('save-file 服务器返回了非JSON响应:', text.substring(0, 500));
+                        throw new Error(`服务器错误: 返回了 ${contentType || '未知类型'} 而不是JSON。响应: ${text.substring(0, 200)}`);
+                    }
+                    
+                    // 尝试解析JSON响应
+                    try {
+                        data = await response.json();
+                    } catch (parseError) {
+                        // 如果JSON解析失败，尝试从克隆的响应中读取文本
+                        try {
+                            const text = await responseClone.text();
+                            console.error('save-file JSON解析失败，响应内容:', text.substring(0, 500));
+                            throw new Error(`服务器返回了无效的JSON响应。状态码: ${response.status}，响应: ${text.substring(0, 200)}`);
+                        } catch (textError) {
+                            throw new Error(`JSON解析失败: ${parseError.message}，状态码: ${response.status}`);
+                        }
+                    }
+                    
+                    if (!response.ok) {
+                        // 处理重复文件错误
+                        if (response.status === 400 && data.error === '文件已存在') {
+                            throw new Error(`文件 "${fileInfo.name}" 已存在`);
+                        }
+                        throw new Error(data.error || data.message || '保存文件失败');
+                    }
+                    return data;
+                }).catch(error => {
+                    // 增强错误信息
+                    console.error(`保存文件 "${fileInfo.name}" 失败:`, error);
+                    throw error;
                 });
+                
+                savePromises.push(savePromise);
             }
+            
+            // 等待所有文件保存完成，收集错误
+            const results = await Promise.allSettled(savePromises);
+            errors = [];
+            successes = [];
+            
+            results.forEach((result, index) => {
+                if (result.status === 'fulfilled') {
+                    successes.push(uploadData.files[index].name);
+                } else {
+                    errors.push({
+                        file: uploadData.files[index].name,
+                        error: result.reason.message
+                    });
+                }
+            });
+            
+            // 显示结果
+            if (errors.length > 0) {
+                const errorMsg = errors.map(e => `${e.file}: ${e.error}`).join('\n');
+                console.warn('部分文件保存失败:', errors);
+                
+                // 如果有些文件成功了，显示警告而不是错误
+                if (successes.length > 0) {
+                    alert(`部分文件保存失败：\n${errorMsg}\n\n但 ${successes.length} 个文件已成功保存。`);
+                } else {
+                    // 所有文件都失败了才显示错误
+                    alert(`所有文件保存失败：\n${errorMsg}`);
+                    return; // 提前返回，不显示成功消息
+                }
+            }
+            
+            if (successes.length === 0 && errors.length > 0) {
+                // 所有文件都失败了
+                console.error('所有文件保存失败');
+                return;
+            }
+            
+            console.log('文件保存结果:', { 成功: successes.length, 失败: errors.length, 成功文件: successes });
         }
         
         if (resultEl) {
-            resultEl.textContent = `上传成功，共 ${uploadData.files?.length || 0} 个文件`;
+            const successCount = successes ? successes.length : uploadData.files?.length || 0;
+            resultEl.textContent = `上传成功，共 ${successCount} 个文件`;
         }
         
         hideUploadModal();
-        alert('上传成功');
+        const successCount = successes ? successes.length : uploadData.files?.length || 0;
+        if (successCount > 0) {
+            alert(`上传成功，共 ${successCount} 个文件`);
+        }
         
-        // 重新加载文件数据
+            // 重新加载文件数据并刷新当前视图
         if (window.learningPlatform) {
+                console.log('重新加载文件数据...');
             await window.learningPlatform.loadFileData();
+                // 确保当前视图已刷新
+                window.learningPlatform.refreshCurrentView();
+                
+                // 根据当前页面刷新相应的内容
+                if (window.learningPlatform.currentSection === 'resources') {
+                    console.log('当前在资源页面，重新加载资源内容');
+                    window.learningPlatform.loadResourceContent();
+                } else if (window.learningPlatform.currentSection === 'textbooks') {
+                    console.log('当前在教材页面，重新加载教材内容');
+                    window.learningPlatform.loadTextbookContent();
+                } else if (window.learningPlatform.currentSection === 'lessonPlans') {
+                    console.log('当前在教案页面，重新加载教案内容');
+                    window.learningPlatform.loadLessonPlanContent();
+                }
+                
+                console.log('文件数据已刷新');
         }
     } catch (err) {
-        console.error(err);
-        alert('上传失败，请检查服务器是否已启动 (npm start)');
+        console.error('上传失败:', err);
+        alert('上传失败: ' + (err.message || '请检查服务器是否已启动 (npm start)'));
     }
 }
 
@@ -3941,6 +4830,29 @@ function getFileTypeFromName(fileName) {
     return typeMap[ext] || 'file';
 }
 
+// 根据文件类型获取图标类名
+function getIconClassFromFileType(fileType) {
+    const iconMap = {
+        'pdf': 'file-pdf',
+        'doc': 'file-word',
+        'docx': 'file-word',
+        'txt': 'file-alt',
+        'jpg': 'file-image',
+        'jpeg': 'file-image',
+        'png': 'file-image',
+        'gif': 'file-image',
+        'video': 'file-video',
+        'mp4': 'file-video',
+        'avi': 'file-video',
+        'audio': 'file-audio',
+        'mp3': 'file-audio',
+        'wav': 'file-audio',
+        'zip': 'file-archive',
+        'rar': 'file-archive'
+    };
+    return iconMap[fileType.toLowerCase()] || 'file';
+}
+
 // 格式化文件大小
 function formatFileSize(bytes) {
     if (bytes < 1024) {
@@ -3952,38 +4864,66 @@ function formatFileSize(bytes) {
     }
 }
 
-// 文件删除功能
-async function deleteFile(category, fileId, fileName) {
-    if (!confirm(`确定要删除文件 "${fileName}" 吗？`)) {
+// 文件删除功能 - 确保在全局作用域
+window.deleteFile = async function deleteFile(category, fileId, fileName) {
+    // 显示确认对话框
+    const confirmed = confirm(`确定要删除文件 "${fileName}" 吗？\n\n此操作将：\n1. 从服务器删除实际文件\n2. 从数据库中删除文件记录\n\n此操作无法撤销！`);
+    
+    if (!confirmed) {
         return;
     }
     
     try {
         const apiBase = (location.origin && location.origin.startsWith('http') ? location.origin : 'http://localhost:3000') + '/api';
         
+        console.log('删除文件请求:', { category, fileId, fileName });
+        
         const resp = await fetch(`${apiBase}/upload/delete-file/${category}/${fileId}`, {
             method: 'DELETE'
         });
         
         if (!resp.ok) {
-            throw new Error('删除失败');
+            const errorData = await resp.json().catch(() => ({ error: '删除失败' }));
+            throw new Error(errorData.error || errorData.message || '删除失败');
         }
         
         const data = await resp.json();
         
         if (data.success) {
+            // 显示成功提示
+            if (window.learningPlatform && window.learningPlatform.showNotification) {
+                window.learningPlatform.showNotification('文件删除成功', 'success');
+            } else {
             alert('删除成功');
+            }
             
-            // 重新加载文件数据
+            console.log('文件删除成功，刷新数据...');
+            
+            // 重新加载文件数据并刷新当前视图
             if (window.learningPlatform) {
                 await window.learningPlatform.loadFileData();
+                
+                // 确保当前视图已刷新
+                window.learningPlatform.refreshCurrentView();
+                
+                // 如果当前在资源页面，强制重新加载资源内容
+                if (window.learningPlatform.currentSection === 'resources') {
+                    window.learningPlatform.loadResourceContent();
+                }
             }
         } else {
-            alert('删除失败');
+            throw new Error(data.error || '删除失败');
         }
     } catch (error) {
         console.error('删除文件失败:', error);
-        alert('删除失败，请检查服务器是否已启动');
+        const errorMessage = error.message || '删除失败，请检查服务器是否已启动';
+        
+        // 显示错误提示
+        if (window.learningPlatform && window.learningPlatform.showNotification) {
+            window.learningPlatform.showNotification(errorMessage, 'error');
+        } else {
+            alert(errorMessage);
+        }
     }
 }
 
@@ -4154,11 +5094,23 @@ function initPadletCourseView() {
     generateSubjectTabs(subjects);
     
     // 如果已有选中的学科，保持选中状态；否则选择第一个
-    if (currentPadletCourseSubject || subjects.length > 0) {
+    if (subjects.length > 0) {
         if (!currentPadletCourseSubject) {
             currentPadletCourseSubject = subjects[0];
         }
         selectSubject(currentPadletCourseSubject);
+    } else {
+        // 没有学科时显示空状态
+        const contentDiv = document.getElementById('padlet-course-content');
+        if (contentDiv) {
+            contentDiv.innerHTML = `
+                <div style="padding: 60px 20px; text-align: center; color: #6b7280;">
+                    <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+                    <p>暂无课程文件</p>
+                    <p style="font-size: 14px; margin-top: 8px;">请上传文件后查看</p>
+                </div>
+            `;
+        }
     }
 }
 
@@ -4185,12 +5137,8 @@ function getUniqueSubjects() {
         }
     });
     
-    // 如果没有找到学科，使用默认学科
-    if (subjects.size === 0) {
-        subjects.add('数学');
-        subjects.add('语文');
-        subjects.add('英语');
-    }
+    // 不再使用默认假学科，如果没有数据则返回空数组
+    // 这样用户看到的就是空状态提示
     
     return Array.from(subjects);
 }
@@ -4288,6 +5236,18 @@ function loadPadletCourseData() {
             item.subject === currentPadletCourseSubject
         ).map(item => ({...item, category: '教案'}))
     ];
+    
+    // 如果没有数据，显示空状态
+    if (weekData.length === 0) {
+        contentDiv.innerHTML = `
+            <div style="padding: 60px 20px; text-align: center; color: #6b7280;">
+                <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+                <p>第${currentPadletCourseWeek}周暂无课程资料</p>
+                <p style="font-size: 14px; margin-top: 8px;">请上传文件后查看</p>
+            </div>
+        `;
+        return;
+    }
     
     let html = '<div class="file-list">';
     html += '<div class="file-list-header">';
@@ -4478,6 +5438,207 @@ function openLearningLog() {
     if (cardsSection && contentSection) {
         cardsSection.style.display = 'none';
         contentSection.style.display = 'block';
+    }
+}
+
+// ========== 新建我的专业导师 ==========
+function openCreateTutorModal() {
+    const modal = document.getElementById('createTutorModal');
+    const result = document.getElementById('createTutorResult');
+    if (result) result.style.display = 'none';
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeCreateTutorModal() {
+    const modal = document.getElementById('createTutorModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function importLatestUploadedText() {
+    const el = document.getElementById('tutorFileContext');
+    if (!el) return;
+    const text = window.latestUploadedExtractedText || '';
+    if (!text) {
+        alert('没有可导入的文本，请先通过“上传并提取”上传文件。');
+        return;
+    }
+    el.value = (el.value ? el.value + '\n\n' : '') + text;
+}
+
+async function submitCreateTutor() {
+    try {
+        const name = (document.getElementById('tutorName')?.value || '').trim();
+        const subject = (document.getElementById('tutorSubject')?.value || '').trim();
+        const goal = (document.getElementById('tutorGoal')?.value || '').trim();
+        const note = (document.getElementById('tutorNote')?.value || '').trim();
+        const fileContext = (document.getElementById('tutorFileContext')?.value || '').trim();
+        
+        if (!name || !subject) {
+            alert('请填写导师名称和学科/领域');
+            return;
+        }
+        
+        const systemPrompt = `你是一位专业的学科导师，名称为“${name}”，擅长领域：${subject}。请根据用户的目标提供结构化、步骤清晰、可执行的指导。${goal ? '用户的目标：' + goal + '。' : ''}${note ? '补充背景：' + note : ''}`;
+        
+        const apiBase = (location.origin && location.origin.startsWith('http') ? location.origin : 'http://localhost:3000') + '/api';
+        const resp = await fetch(`${apiBase}/deepseek/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'deepseek-chat',
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: goal ? `请结合我的目标“${goal}”给出详细行动建议。` : '请给出本周的个性化学习建议与行动清单。' }
+                ],
+                fileContext: fileContext
+            })
+        });
+        if (!resp.ok) {
+            const text = await resp.text();
+            throw new Error(text || '请求失败');
+        }
+        const data = await resp.json();
+        const content = data?.choices?.[0]?.message?.content || JSON.stringify(data);
+        const resultBox = document.getElementById('createTutorResult');
+        const answerEl = document.getElementById('createTutorAnswer');
+        if (answerEl) answerEl.textContent = content;
+        if (resultBox) resultBox.style.display = 'block';
+
+        // 保存导师配置到后端
+        try {
+            const apiBase = (location.origin && location.origin.startsWith('http') ? location.origin : 'http://localhost:3000') + '/api';
+            await fetch(`${apiBase}/tutors`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, subject, goal, note, fileContext })
+            });
+        } catch (e) {
+            console.warn('保存导师到后端失败（不影响当前回答展示）:', e);
+        }
+    } catch (e) {
+        alert('创建失败：' + (e.message || '未知错误'));
+        console.error(e);
+    }
+}
+
+function openExistingTutorModal() {
+    const modal = document.getElementById('existingTutorModal');
+    if (modal) modal.style.display = 'flex';
+    loadExistingTutors();
+}
+
+function closeExistingTutorModal() {
+    const modal = document.getElementById('existingTutorModal');
+    if (modal) modal.style.display = 'none';
+}
+
+let selectedTutorId = null;
+function loadExistingTutors() {
+    const listEl = document.getElementById('tutorList');
+    if (!listEl) return;
+    (async () => {
+        try {
+            const apiBase = (location.origin && location.origin.startsWith('http') ? location.origin : 'http://localhost:3000') + '/api';
+            const resp = await fetch(`${apiBase}/tutors`);
+            const data = await resp.json();
+            const list = data?.tutors || [];
+            if (list.length === 0) {
+                listEl.innerHTML = '<div class="empty-resource-state"><i class="fas fa-inbox"></i><p>暂无已保存的导师</p><p class="empty-hint">请先创建一个导师</p></div>';
+                selectedTutorId = null;
+                return;
+            }
+            let html = '<div class="file-list-header"><div class="file-name">导师</div><div class="file-type">学科</div><div class="file-date">创建时间</div><div class="file-actions-header">操作</div></div>';
+            list.forEach(t => {
+                html += `<div class=\"file-list-item\" data-id=\"${t.id}\">\n                    <div class=\"file-name\"><strong>${t.name}</strong></div>\n                    <div class=\"file-type\">${t.subject || '-'}</div>\n                    <div class=\"file-date\">${new Date(t.createdAt).toLocaleString()}</div>\n                    <div class=\"file-actions\">\n                        <button class=\"btn btn-secondary btn-sm\" onclick=\"selectTutorItem('${t.id}')\"><i class=\"fas fa-check\"></i> 选择</button>\n                        <button class=\"btn btn-primary btn-sm\" onclick=\"editTutor('${t.id}')\"><i class=\"fas fa-pen\"></i></button>\n                        <button class=\"btn btn-danger btn-sm\" onclick=\"deleteTutor('${t.id}')\"><i class=\"fas fa-trash\"></i></button>\n                    </div>\n                </div>`;
+            });
+            listEl.innerHTML = html;
+            selectedTutorId = list[0].id;
+        } catch (e) {
+            console.error('加载导师失败:', e);
+            listEl.innerHTML = '<div class="empty-resource-state"><i class="fas fa-exclamation-circle"></i><p>加载失败</p></div>';
+        }
+    })();
+}
+
+function selectTutorItem(id) {
+    selectedTutorId = id;
+    const items = document.querySelectorAll('#tutorList .file-list-item');
+    items.forEach(el => {
+        if (el.getAttribute('data-id') === id) el.classList.add('active'); else el.classList.remove('active');
+    });
+}
+
+async function startQnAWithSelectedTutor() {
+    try {
+        if (!selectedTutorId) {
+            alert('请先选择一个导师');
+            return;
+        }
+        const apiBase = (location.origin && location.origin.startsWith('http') ? location.origin : 'http://localhost:3000') + '/api';
+        const listResp = await fetch(`${apiBase}/tutors`);
+        const listData = await listResp.json();
+        const tutor = (listData?.tutors || []).find(t => t.id === selectedTutorId);
+        if (!tutor) {
+            alert('未找到导师');
+            return;
+        }
+        const question = (document.getElementById('existingTutorQuestion')?.value || '').trim() || '请给出本周的个性化学习建议与行动清单。';
+        const systemPrompt = `你是一位专业的学科导师，名称为“${tutor.name}”，擅长领域：${tutor.subject}。请根据用户的目标提供结构化、步骤清晰、可执行的指导。${tutor.goal ? '用户的目标：' + tutor.goal + '。' : ''}${tutor.note ? '补充背景：' + tutor.note : ''}`;
+        const resp = await fetch(`${apiBase}/deepseek/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'deepseek-chat',
+                messages: [ { role: 'system', content: systemPrompt }, { role: 'user', content: question } ],
+                fileContext: tutor.fileContext || ''
+            })
+        });
+        const data = await resp.json();
+        const content = data?.choices?.[0]?.message?.content || JSON.stringify(data);
+        closeExistingTutorModal();
+        // 复用创建弹窗展示结果
+        openCreateTutorModal();
+        const resultBox = document.getElementById('createTutorResult');
+        const answerEl = document.getElementById('createTutorAnswer');
+        if (answerEl) answerEl.textContent = content;
+        if (resultBox) resultBox.style.display = 'block';
+    } catch (e) {
+        alert('请求失败：' + (e.message || '未知错误'));
+        console.error(e);
+    }
+}
+
+// 编辑/删除（管理）
+async function editTutor(id) {
+    try {
+        const name = prompt('新的导师名称');
+        if (name === null) return;
+        const subject = prompt('新的学科/领域');
+        if (subject === null) return;
+        const goal = prompt('新的指导目标（可留空）') || '';
+        const note = prompt('新的备注（可留空）') || '';
+        const apiBase = (location.origin && location.origin.startsWith('http') ? location.origin : 'http://localhost:3000') + '/api';
+        const resp = await fetch(`${apiBase}/tutors/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, subject, goal, note })
+        });
+        if (!resp.ok) throw new Error('更新失败');
+        loadExistingTutors();
+    } catch (e) {
+        alert('更新失败：' + (e.message || '未知错误'));
+    }
+}
+
+async function deleteTutor(id) {
+    if (!confirm('确定删除该导师吗？此操作不可撤销。')) return;
+    try {
+        const apiBase = (location.origin && location.origin.startsWith('http') ? location.origin : 'http://localhost:3000') + '/api';
+        const resp = await fetch(`${apiBase}/tutors/${id}`, { method: 'DELETE' });
+        if (!resp.ok) throw new Error('删除失败');
+        loadExistingTutors();
+    } catch (e) {
+        alert('删除失败：' + (e.message || '未知错误'));
     }
 }
 
@@ -4692,56 +5853,75 @@ function switchFileSource(type) {
     loadExistingFiles(type);
 }
 
-function loadExistingFiles(type) {
+async function loadExistingFiles(type) {
     const fileList = document.getElementById('existingFilesList');
     if (!fileList) return;
     
     fileList.innerHTML = '<p style="text-align:center;padding:20px;color:#999;">正在加载文件...</p>';
     
-    // 模拟从已有文件加载
-    setTimeout(() => {
-        let mockFiles = [];
+    try {
+        let apiUrl = '';
+        let dataKey = '';
+        
+        // 根据类型确定API端点和数据键
         if (type === 'textbooks') {
-            mockFiles = [
-                { name: '数学教材-第一章.pdf', size: '2.5MB', id: 1, type: 'pdf' },
-                { name: '语文教材-古诗鉴赏.pdf', size: '1.8MB', id: 2, type: 'pdf' },
-                { name: '英语教材-语法专题.docx', size: '3.2MB', id: 3, type: 'docx' }
-            ];
+            apiUrl = '/api/materials';
+            dataKey = 'materials';
         } else if (type === 'lessonPlans') {
-            mockFiles = [
-                { name: '教案-数学-第一周.docx', size: '1.5MB', id: 4, type: 'docx' },
-                { name: '教案-语文-古诗赏析.docx', size: '2.0MB', id: 5, type: 'docx' }
-            ];
+            apiUrl = '/api/lesson-plans';
+            dataKey = 'lessonPlans';
         } else if (type === 'resources') {
-            mockFiles = [
-                { name: '定语从句讲解视频.mp4', size: '125MB', id: 6, type: 'video' },
-                { name: '语音连读图解.png', size: '2.1MB', id: 7, type: 'image' },
-                { name: '英语听力材料.mp3', size: '15.6MB', id: 8, type: 'audio' },
-                { name: '词汇练习包.zip', size: '8.3MB', id: 9, type: 'zip' }
-            ];
+            apiUrl = '/api/resources';
+            dataKey = 'resources';
+        } else {
+            fileList.innerHTML = '<p style="text-align:center;padding:20px;color:#999;">未知的文件类型</p>';
+            return;
         }
         
-        fileList.innerHTML = mockFiles.map(file => {
+        // 从API加载真实数据
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+            throw new Error('加载文件列表失败');
+        }
+        
+        const data = await response.json();
+        const files = data[dataKey] || [];
+        
+        if (files.length === 0) {
+            fileList.innerHTML = '<p style="text-align:center;padding:20px;color:#999;">暂无文件</p>';
+            return;
+        }
+        
+        // 渲染文件列表
+        fileList.innerHTML = files.map(file => {
             // 根据文件类型选择图标
+            const fileType = (file.fileType || '').toLowerCase();
             let iconClass = 'fa-file';
-            if (file.type === 'pdf') iconClass = 'fa-file-pdf';
-            else if (file.type === 'docx' || file.type === 'doc') iconClass = 'fa-file-word';
-            else if (file.type === 'video') iconClass = 'fa-file-video';
-            else if (file.type === 'image') iconClass = 'fa-file-image';
-            else if (file.type === 'audio') iconClass = 'fa-file-audio';
-            else if (file.type === 'zip') iconClass = 'fa-file-archive';
+            if (fileType === 'pdf') iconClass = 'fa-file-pdf';
+            else if (fileType === 'docx' || fileType === 'doc') iconClass = 'fa-file-word';
+            else if (fileType === 'video' || fileType === 'mp4') iconClass = 'fa-file-video';
+            else if (fileType === 'png' || fileType === 'jpg' || fileType === 'jpeg' || fileType === 'image') iconClass = 'fa-file-image';
+            else if (fileType === 'audio' || fileType === 'mp3') iconClass = 'fa-file-audio';
+            else if (fileType === 'zip' || fileType === 'rar') iconClass = 'fa-file-archive';
+            
+            const fileName = file.title || file.name || '未命名文件';
+            const fileSize = file.size || '0MB';
             
             return `
-            <div class="file-item" data-file-id="${file.id}" onclick="selectExistingFile(${file.id}, '${file.name}')">
+            <div class="file-item" data-file-id="${file.id}" onclick="selectExistingFile(${file.id}, '${fileName.replace(/'/g, "\\'")}')">
                 <i class="fas ${iconClass}"></i>
                 <div class="file-info">
-                    <div class="file-name">${file.name}</div>
-                    <div class="file-size">${file.size}</div>
+                    <div class="file-name">${fileName}</div>
+                    <div class="file-size">${fileSize}</div>
                 </div>
             </div>
         `;
         }).join('');
-    }, 300);
+        
+    } catch (error) {
+        console.error('加载文件列表失败:', error);
+        fileList.innerHTML = '<p style="text-align:center;padding:20px;color:#dc2626;">加载失败，请重试</p>';
+    }
 }
 
 function selectExistingFile(id, name) {
@@ -4897,6 +6077,242 @@ function removeUploadedFile(fileName) {
     } else {
         // 更新显示
         showUploadedFilesBadge();
+    }
+}
+
+// 资源管理相关全局函数
+
+// 搜索资源
+function filterResources() {
+    if (window.learningPlatform) {
+        window.learningPlatform.loadResourceContent();
+    }
+}
+
+// 清空搜索
+function clearResourceSearch() {
+    const searchInput = document.getElementById('resourceSearch');
+    if (searchInput) {
+        searchInput.value = '';
+        filterResources();
+    }
+}
+
+// 按类型筛选资源
+function filterResourcesByType(type) {
+    window.currentResourceFilter = type;
+    
+    // 更新按钮状态
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.filter === type) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // 重新加载内容
+    if (window.learningPlatform) {
+        window.learningPlatform.loadResourceContent();
+    }
+}
+
+// 查看资源
+function viewResource(id) {
+    console.log('查看资源:', id);
+    if (window.learningPlatform) {
+        window.learningPlatform.showNotification(`正在打开资源 ${id}`, 'info');
+    }
+    // TODO: 实现文件查看功能
+}
+
+// 下载资源
+function downloadResource(id) {
+    console.log('下载资源:', id);
+    if (window.learningPlatform) {
+        window.learningPlatform.showNotification(`正在下载资源 ${id}`, 'info');
+    }
+    // TODO: 实现文件下载功能
+}
+
+// 触发资源上传（点击上传区域时）
+function triggerResourceUpload() {
+    uploadFile('resource');
+}
+
+// 处理资源拖放
+function handleResourceDragOver(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const uploadArea = event.currentTarget;
+    uploadArea.style.borderColor = '#667eea';
+    uploadArea.style.backgroundColor = '#f0f4ff';
+}
+
+// 处理资源拖放离开
+function handleResourceDragLeave(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const uploadArea = event.currentTarget;
+    uploadArea.style.borderColor = '#cbd5e1';
+    uploadArea.style.backgroundColor = '';
+}
+
+// 处理资源拖放放下
+function handleResourceDrop(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const uploadArea = event.currentTarget;
+    uploadArea.style.borderColor = '#cbd5e1';
+    uploadArea.style.backgroundColor = '';
+    
+    const files = event.dataTransfer.files;
+    if (files && files.length > 0) {
+        // 暂时通过触发文件选择器来处理拖放的文件
+        // 更好的方式是将文件直接传递给uploadFile函数
+        uploadFile('resource');
+        // TODO: 实现直接处理拖放文件的功能
+    }
+}
+
+// ========== 教材相关函数 ==========
+
+// 触发教材上传
+function triggerTextbookUpload() {
+    uploadFile('textbook');
+}
+
+// 处理教材拖放
+function handleTextbookDragOver(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const uploadArea = event.currentTarget;
+    uploadArea.style.borderColor = '#667eea';
+    uploadArea.style.backgroundColor = '#f0f4ff';
+}
+
+function handleTextbookDragLeave(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const uploadArea = event.currentTarget;
+    uploadArea.style.borderColor = '#cbd5e1';
+    uploadArea.style.backgroundColor = '';
+}
+
+function handleTextbookDrop(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const uploadArea = event.currentTarget;
+    uploadArea.style.borderColor = '#cbd5e1';
+    uploadArea.style.backgroundColor = '';
+    
+    const files = event.dataTransfer.files;
+    if (files && files.length > 0) {
+        uploadFile('textbook');
+    }
+}
+
+// 搜索教材
+function filterTextbooks() {
+    if (window.learningPlatform) {
+        window.learningPlatform.loadTextbookContent();
+    }
+}
+
+// 按类型筛选教材
+function filterTextbooksByType(type) {
+    window.currentTextbookFilter = type;
+    
+    // 更新按钮状态
+    document.querySelectorAll('#textbooks .filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.filter === type) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // 重新加载内容
+    if (window.learningPlatform) {
+        window.learningPlatform.loadTextbookContent();
+    }
+}
+
+// 清空教材搜索
+function clearTextbookSearch() {
+    const searchInput = document.getElementById('textbookSearch');
+    if (searchInput) {
+        searchInput.value = '';
+        filterTextbooks();
+    }
+}
+
+// ========== 教案相关函数 ==========
+
+// 触发教案上传
+function triggerLessonPlanUpload() {
+    uploadFile('lessonPlan');
+}
+
+// 处理教案拖放
+function handleLessonPlanDragOver(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const uploadArea = event.currentTarget;
+    uploadArea.style.borderColor = '#667eea';
+    uploadArea.style.backgroundColor = '#f0f4ff';
+}
+
+function handleLessonPlanDragLeave(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const uploadArea = event.currentTarget;
+    uploadArea.style.borderColor = '#cbd5e1';
+    uploadArea.style.backgroundColor = '';
+}
+
+function handleLessonPlanDrop(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const uploadArea = event.currentTarget;
+    uploadArea.style.borderColor = '#cbd5e1';
+    uploadArea.style.backgroundColor = '';
+    
+    const files = event.dataTransfer.files;
+    if (files && files.length > 0) {
+        uploadFile('lessonPlan');
+    }
+}
+
+// 搜索教案
+function filterLessonPlans() {
+    if (window.learningPlatform) {
+        window.learningPlatform.loadLessonPlanContent();
+    }
+}
+
+// 按类型筛选教案
+function filterLessonPlansByType(type) {
+    window.currentLessonPlanFilter = type;
+    
+    // 更新按钮状态
+    document.querySelectorAll('#lessonPlans .filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.filter === type) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // 重新加载内容
+    if (window.learningPlatform) {
+        window.learningPlatform.loadLessonPlanContent();
+    }
+}
+
+// 清空教案搜索
+function clearLessonPlanSearch() {
+    const searchInput = document.getElementById('lessonPlanSearch');
+    if (searchInput) {
+        searchInput.value = '';
+        filterLessonPlans();
     }
 }
 

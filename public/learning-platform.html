@@ -171,119 +171,100 @@
             <!-- 我的导师页面 -->
             <section id="myTutor" class="content-section">
                 <div class="chat-container">
-                    <div class="chat-header">
+                    <div class="chat-header tutor-header">
                         <h2><i class="fas fa-user-graduate"></i> 学科专业导师</h2>
                         <div class="chat-actions">
                             <button class="btn btn-secondary" onclick="showChatHistory('myTutor')">
                                 <i class="fas fa-history"></i> 历史对话
                             </button>
-                            <button class="btn btn-secondary" onclick="clearChat()">
-                                <i class="fas fa-trash"></i> 清空对话
-                            </button>
-                            <button class="btn btn-primary" onclick="newChat()">
-                                <i class="fas fa-plus"></i> 新建对话
-                            </button>
                         </div>
                     </div>
                     
                     <div class="chat-messages" id="myTutorMessages">
-                        <div class="welcome-message">
-                            <div class="welcome-content">
-                                <i class="fas fa-user-graduate"></i>
-                                <h3>欢迎使用学科专业导师！</h3>
-                                <p>我是您的专属学习导师，可以为您提供个性化的学习指导和答疑服务。</p>
-                                <div class="quick-questions">
-                                    <h4>快速开始：</h4>
-                                    <div class="question-chips">
-                                        <span class="chip" onclick="askMyTutor('请帮我制定学习计划')">制定学习计划</span>
-                                        <span class="chip" onclick="askMyTutor('如何提高学习效率？')">提高学习效率</span>
-                                        <span class="chip" onclick="askMyTutor('推荐一些学习方法')">学习方法推荐</span>
-                                        <span class="chip" onclick="askMyTutor('帮我分析学习问题')">学习问题分析</span>
-                                    </div>
+                        <div class="tutor-hero">
+                            <div class="tutor-hero-icon"><i class="fas fa-user-graduate"></i></div>
+                            <div class="tutor-hero-text">
+                                <h3 class="tutor-title">欢迎使用学科专业导师</h3>
+                                <p class="tutor-subtitle">基于你的目标与资料，生成个性化的学习规划、方法与行动清单。</p>
+                                <div class="tutor-actions">
+                                    <button class="btn btn-primary btn-lg" onclick="openCreateTutorModal()">
+                                        <i class="fas fa-user-plus"></i> 新建我的专业导师
+                                    </button>
+                                    <button class="btn btn-secondary btn-lg" onclick="openExistingTutorModal()">
+                                        <i class="fas fa-users"></i> 选择已有专业导师
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
                     
-                    <div class="chat-input-container">
-                        <div class="input-wrapper">
-                            <button class="attach-btn" onclick="toggleFileUpload()" title="上传文件" id="attachBtn">
-                                <i class="fas fa-paperclip"></i>
-                            </button>
-                            <textarea id="myTutorInput" placeholder="向学科专业导师提问..." rows="1"></textarea>
-                            <button class="send-btn" onclick="sendMyTutorMessage()" id="myTutorSendBtn">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </section>
 
-            <!-- 文件上传弹窗 -->
-            <div class="modal-overlay" id="fileUploadModal" style="display: none;" onclick="if(event.target === this) closeFileUploadModal()">
-                <div class="modal-content file-upload-modal">
+    <!-- 新建我的专业导师弹窗 -->
+    <div class="modal-overlay" id="createTutorModal" style="display: none;" onclick="if(event.target === this) closeCreateTutorModal()">
+        <div class="modal-content" style="max-width: 720px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus"></i> 新建我的专业导师</h3>
+                <button class="close-btn" onclick="closeCreateTutorModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-row">
+                        <label>导师名称</label>
+                        <input type="text" id="tutorName" placeholder="如：英语学科导师">
+                    </div>
+                    <div class="form-row">
+                        <label>学科/领域</label>
+                        <input type="text" id="tutorSubject" placeholder="如：英语/物理/历史">
+                    </div>
+                    <div class="form-row">
+                        <label>指导目标</label>
+                        <input type="text" id="tutorGoal" placeholder="如：备战期中考试、提升阅读理解">
+                    </div>
+                    <div class="form-row">
+                        <label>个人化说明（可选）</label>
+                        <textarea id="tutorNote" rows="3" placeholder="你的背景、当前薄弱点、希望的指导风格等"></textarea>
+                    </div>
+                </div>
+
+                <div class="divider" style="margin: 16px 0;"></div>
+                <h4 style="margin: 0 0 8px 0;">问题资料</h4>
+                <p style="color:#6b7280; margin-top:0;">可直接粘贴文本，或通过文件提取内容后导入。</p>
+                <div style="display:flex; gap:8px; margin-bottom:8px;">
+                    <button class="btn btn-secondary" onclick="uploadFile('resource')"><i class="fas fa-upload"></i> 上传并提取</button>
+                    <button class="btn" onclick="importLatestUploadedText()"><i class="fas fa-file-import"></i> 导入最近上传文本</button>
+                </div>
+                <textarea id="tutorFileContext" rows="6" placeholder="在此粘贴或导入资料文本……" style="width:100%;"></textarea>
+
+                <div class="form-actions" style="margin-top:16px; display:flex; justify-content:flex-end; gap:8px;">
+                    <button class="btn btn-secondary" onclick="closeCreateTutorModal()">取消</button>
+                    <button class="btn btn-primary" onclick="submitCreateTutor()"><i class="fas fa-play"></i> 创建并向导师提问</button>
+                </div>
+                <div id="createTutorResult" class="file-list" style="margin-top:16px; display:none; padding:16px;">
+                    <pre id="createTutorAnswer" style="white-space:pre-wrap; margin:0;"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+            
+            <!-- 选择已有专业导师弹窗 -->
+            <div class="modal-overlay" id="existingTutorModal" style="display: none;" onclick="if(event.target === this) closeExistingTutorModal()">
+                <div class="modal-content" style="max-width: 720px;">
                     <div class="modal-header">
-                        <h3><i class="fas fa-paperclip"></i> 上传文件</h3>
-                        <button class="close-btn" onclick="closeFileUploadModal()">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        <h3><i class="fas fa-users"></i> 选择已有专业导师</h3>
+                        <button class="close-btn" onclick="closeExistingTutorModal()"><i class="fas fa-times"></i></button>
                     </div>
-                    
                     <div class="modal-body">
-                        <div class="upload-options">
-                            <div class="upload-tabs">
-                                <button class="upload-tab active" onclick="switchUploadTab('new')">
-                                    <i class="fas fa-upload"></i> 新上传
-                                </button>
-                                <button class="upload-tab" onclick="switchUploadTab('existing')">
-                                    <i class="fas fa-folder-open"></i> 从已有文件选择
-                                </button>
-                            </div>
-                            
-                            <!-- 新上传 -->
-                            <div class="upload-content" id="newUpload">
-                                <div class="file-drop-zone" ondragover="event.preventDefault()" ondrop="handleFileDrop(event)">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                    <p>拖拽文件到此处或点击上传</p>
-                                    <input type="file" id="myTutorFileInput" multiple accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png" style="display:none;" onchange="handleFileSelect(event)">
-                                    <button class="btn btn-secondary" onclick="document.getElementById('myTutorFileInput').click()">
-                                        <i class="fas fa-plus"></i> 选择文件
-                                    </button>
-                                </div>
-                                <div class="file-list" id="myTutorNewFileList"></div>
-                            </div>
-                            
-                            <!-- 从已有文件选择 -->
-                            <div class="upload-content" id="existingUpload" style="display: none;">
-                                <div class="file-source-tabs">
-                                    <button class="source-tab active" onclick="switchFileSource('textbooks')">
-                                        <i class="fas fa-book-open"></i> 教材
-                                    </button>
-                                    <button class="source-tab" onclick="switchFileSource('lessonPlans')">
-                                        <i class="fas fa-clipboard-list"></i> 教案
-                                    </button>
-                                    <button class="source-tab" onclick="switchFileSource('resources')">
-                                        <i class="fas fa-folder"></i> 个人知识库
-                                    </button>
-                                </div>
-                                <div class="file-grid" id="existingFilesList">
-                                    <!-- 动态加载已有文件 -->
-                                </div>
-                            </div>
-                        </div>
+                        <div id="tutorList" class="file-list" style="max-height:300px; overflow:auto;"></div>
+                        <div class="divider" style="margin: 12px 0;"></div>
+                        <textarea id="existingTutorQuestion" rows="4" placeholder="在此输入要向该导师提问的内容……" style="width:100%;"></textarea>
                     </div>
-                    
                     <div class="modal-footer">
-                        <div class="selected-files-count" id="selectedFilesCount" style="flex: 1; color: #667eea; font-weight: 500;">
-                            已选择：0 个文件
-                        </div>
-                        <button class="btn btn-primary" onclick="confirmFileUpload()">
-                            <i class="fas fa-check"></i> 确认上传
-                        </button>
-                        <button class="btn btn-secondary" onclick="closeFileUploadModal()">
-                            <i class="fas fa-times"></i> 取消
-                        </button>
+                        <button class="btn btn-secondary" onclick="closeExistingTutorModal()">取消</button>
+                        <button class="btn btn-primary" onclick="startQnAWithSelectedTutor()"><i class="fas fa-play"></i> 开始问答</button>
                     </div>
                 </div>
             </div>
@@ -436,57 +417,7 @@
                                     <div class="file-actions-header">操作</div>
                                 </div>
                                 
-                                <div class="file-list-item">
-                                    <div class="file-name">
-                                        <div class="file-details">
-                                            <h4>高中英语教材（必修一）</h4>
-                                            <div class="file-tags">
-                                                <span class="tag">教材</span>
-                                                <span class="tag">英语</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="file-type">PDF</div>
-                                    <div class="file-size">2.5MB</div>
-                                    <div class="file-date">2024-01-15</div>
-                                    <div class="file-actions">
-                                        <button class="btn btn-primary btn-sm" title="查看">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-sm" title="下载">
-                                            <i class="fas fa-download"></i>
-                                        </button>
-                                        <button class="btn btn-danger btn-sm" title="删除">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="file-list-item">
-                                    <div class="file-name">
-                                        <div class="file-details">
-                                            <h4>Unit 1 教学计划</h4>
-                                            <div class="file-tags">
-                                                <span class="tag">教案</span>
-                                                <span class="tag">第一章</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="file-type">DOCX</div>
-                                    <div class="file-size">156KB</div>
-                                    <div class="file-date">2024-01-20</div>
-                                    <div class="file-actions">
-                                        <button class="btn btn-primary btn-sm" title="查看">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-sm" title="下载">
-                                            <i class="fas fa-download"></i>
-                                        </button>
-                                        <button class="btn btn-danger btn-sm" title="删除">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                                <!-- 文件列表将通过JavaScript从API动态加载 -->
                             </div>
                         </div>
                     </div>
@@ -509,31 +440,7 @@
                                     <div class="file-actions-header">操作</div>
                                 </div>
                                 
-                                <div class="file-list-item">
-                                    <div class="file-name">
-                                        <div class="file-details">
-                                            <h4>高中英语教材（必修一）</h4>
-                                            <div class="file-tags">
-                                                <span class="tag">教材</span>
-                                                <span class="tag">英语</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="file-type">PDF</div>
-                                    <div class="file-size">2.5MB</div>
-                                    <div class="file-date">2024-01-15</div>
-                                    <div class="file-actions">
-                                        <button class="btn btn-primary btn-sm" title="查看">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-sm" title="下载">
-                                            <i class="fas fa-download"></i>
-                                        </button>
-                                        <button class="btn btn-danger btn-sm" title="删除">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                                <!-- 文件列表将通过JavaScript从API动态加载 -->
                             </div>
                         </div>
                     </div>
@@ -557,8 +464,14 @@
                             <h3>学习打卡日历</h3>
                             <p>记录每日学习，追踪学习进度和打卡率</p>
                             <div class="card-stats">
-                                <span><i class="fas fa-check"></i> 本月打卡 15天</span>
-                                <span><i class="fas fa-percentage"></i> 打卡率 85%</span>
+                                <span>
+                                    <i class="fas fa-check"></i>
+                                    本月打卡 <span id="calendarCardDays">0</span> 天
+                                </span>
+                                <span>
+                                    <i class="fas fa-percentage"></i>
+                                    打卡率 <span id="calendarCardRate">0%</span>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -617,27 +530,41 @@
                         <div class="profile-left">
                             <div class="calendar-container">
                                 <h3><i class="fas fa-calendar-check"></i> 学习打卡日历</h3>
-                                <div class="calendar">
-                                    <div class="calendar-header">
-                                        <button class="btn btn-secondary btn-sm" onclick="previousMonth()">
-                                            <i class="fas fa-chevron-left"></i>
-                                        </button>
-                                        <h4 id="currentMonth">2024年1月</h4>
-                                        <button class="btn btn-secondary btn-sm" onclick="nextMonth()">
-                                            <i class="fas fa-chevron-right"></i>
-                                        </button>
+                                <div class="calendar-split">
+                                    <div class="calendar-main">
+                                        <div class="calendar">
+                                            <div class="calendar-header">
+                                                <button class="btn btn-secondary btn-sm" onclick="previousMonth()">
+                                                    <i class="fas fa-chevron-left"></i>
+                                                </button>
+                                                <h4 id="currentMonth">2024年1月</h4>
+                                                <button class="btn btn-secondary btn-sm" onclick="nextMonth()">
+                                                    <i class="fas fa-chevron-right"></i>
+                                                </button>
+                                            </div>
+                                            <div class="calendar-legend">
+                                                <span><span class="legend-dot legend-checked"></span>已打卡</span>
+                                                <span><span class="legend-dot legend-today"></span>今天</span>
+                                                <span><span class="legend-dot legend-empty"></span>未打卡</span>
+                                            </div>
+                                            <div class="calendar-grid" id="calendarGrid"></div>
+                                        </div>
                                     </div>
-                                    <div class="calendar-grid" id="calendarGrid"></div>
-                                </div>
-                                <div class="calendar-stats">
-                                    <div class="stat-item">
-                                        <span class="stat-number">15</span>
-                                        <span class="stat-label">本月打卡天数</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-number">85%</span>
-                                        <span class="stat-label">打卡率</span>
-                                    </div>
+                                    <aside class="calendar-side">
+                                        <div class="calendar-stats">
+                                            <div class="stat-item">
+                                                <span class="stat-number">15</span>
+                                                <span class="stat-label">本月打卡天数</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-number">85%</span>
+                                                <span class="stat-label">打卡率</span>
+                                                <div class="stat-progress">
+                                                    <div class="stat-progress-bar" id="checkRateBar" style="width: 85%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </aside>
                                 </div>
                             </div>
                         </div>
@@ -838,75 +765,54 @@
             <!-- 教材页面 -->
             <section id="textbooks" class="content-section">
                 <div class="section-header">
-                    <h2><i class="fas fa-book-open"></i> 教材</h2>
-                    <div class="section-actions">
-                        <button class="btn btn-primary" onclick="uploadFile('textbook')">
-                            <i class="fas fa-upload"></i> 上传教材
+                    <div>
+                        <h2><i class="fas fa-book-open"></i> 教材</h2>
+                        <p class="section-subtitle">管理您的教学教材和参考资料</p>
+                    </div>
+                </div>
+                
+                <!-- 上传区域（缩小版） -->
+                <div class="resources-upload-area compact" onclick="triggerTextbookUpload()" ondrop="handleTextbookDrop(event)" ondragover="handleTextbookDragOver(event)" ondragleave="handleTextbookDragLeave(event)">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h3>上传教材文件</h3>
+                    <p>点击上传或拖拽文件到这里</p>
+                    <p class="upload-hint">支持 PDF、Word、图片等格式</p>
+                    <button class="btn btn-primary" onclick="event.stopPropagation(); uploadFile('textbook');">
+                        <i class="fas fa-plus"></i> 选择文件上传
+                    </button>
+                </div>
+                
+                <!-- 搜索和筛选工具栏 -->
+                <div class="resources-toolbar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="textbookSearch" placeholder="搜索教材..." oninput="filterTextbooks()">
+                        <button class="clear-search" id="clearTextbookSearchBtn" onclick="clearTextbookSearch()" style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="file-filters">
+                        <button class="filter-btn active" data-filter="all" onclick="filterTextbooksByType('all')">
+                            <i class="fas fa-th"></i> 全部
+                        </button>
+                        <button class="filter-btn" data-filter="pdf" onclick="filterTextbooksByType('pdf')">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                        <button class="filter-btn" data-filter="document" onclick="filterTextbooksByType('document')">
+                            <i class="fas fa-file-word"></i> 文档
+                        </button>
+                        <button class="filter-btn" data-filter="image" onclick="filterTextbooksByType('image')">
+                            <i class="fas fa-image"></i> 图片
                         </button>
                     </div>
                 </div>
                 
-                <div class="file-management">
-                    <div class="file-filters">
-                        <button class="btn btn-secondary active" onclick="switchTextbookView('weekly')">
-                            <i class="fas fa-calendar-week"></i> 按教学周
-                        </button>
-                        <button class="btn btn-secondary" onclick="switchTextbookView('category')">
-                            <i class="fas fa-folder"></i> 按类型
-                        </button>
-                    </div>
-                    
-                    <!-- 按教学周视图 -->
-                    <div id="weekly-view" class="textbook-view active">
-                        <div class="week-navigation">
-                            <button class="btn btn-secondary btn-sm" onclick="previousWeek()">
-                                <i class="fas fa-chevron-left"></i> 上一周
-                            </button>
-                            <h3 id="current-week-display">第1周</h3>
-                            <button class="btn btn-secondary btn-sm" onclick="nextWeek()">
-                                下一周 <i class="fas fa-chevron-right"></i>
-                            </button>
-                            <div class="week-jump">
-                                <input type="number" id="week-jump-input" min="1" max="16" placeholder="周数" onkeypress="handleWeekJumpKeyPress(event)">
-                                <button class="btn btn-primary btn-sm" onclick="jumpToWeek()">
-                                    <i class="fas fa-arrow-right"></i> 跳转
-                                </button>
-                            </div>
-                        </div>
-                        <div id="weekly-content" class="file-list-content">
-                            <div class="file-list">
-                                <div class="file-list-header">
-                                    <div class="file-name">文件名</div>
-                                    <div class="file-type">类型</div>
-                                    <div class="file-size">大小</div>
-                                    <div class="file-date">上传时间</div>
-                                    <div class="file-actions-header">操作</div>
-                                </div>
-                                <!-- 周内容将通过JavaScript动态生成 -->
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 按类型视图 -->
-                    <div id="category-view" class="textbook-view">
-                        <div class="file-filters">
-                            <button class="btn btn-secondary active" onclick="filterFiles('all')">全部</button>
-                            <button class="btn btn-secondary" onclick="filterFiles('pdf')">PDF</button>
-                            <button class="btn btn-secondary" onclick="filterFiles('doc')">文档</button>
-                            <button class="btn btn-secondary" onclick="filterFiles('image')">图片</button>
-                        </div>
-                        <div id="category-content" class="file-list-content">
-                            <div class="file-list">
-                                <div class="file-list-header">
-                                    <div class="file-name">文件名</div>
-                                    <div class="file-type">类型</div>
-                                    <div class="file-size">大小</div>
-                                    <div class="file-date">上传时间</div>
-                                    <div class="file-actions-header">操作</div>
-                                </div>
-                                <!-- 类型内容将通过JavaScript动态生成 -->
-                            </div>
-                        </div>
+                <!-- 文件列表区域 -->
+                <div class="resources-content">
+                    <div class="file-list" id="textbookFileList">
+                        <!-- 文件列表将通过JavaScript从API动态加载 -->
                     </div>
                 </div>
             </section>
@@ -914,59 +820,54 @@
             <!-- 教案页面 -->
             <section id="lessonPlans" class="content-section">
                 <div class="section-header">
-                    <h2><i class="fas fa-clipboard-list"></i> 教案</h2>
-                    <div class="section-actions">
-                        <button class="btn btn-primary" onclick="uploadFile('lessonPlan')">
-                            <i class="fas fa-upload"></i> 上传教案
+                    <div>
+                        <h2><i class="fas fa-clipboard-list"></i> 教案</h2>
+                        <p class="section-subtitle">管理您的教学计划和教案资料</p>
+                    </div>
+                </div>
+                
+                <!-- 上传区域（缩小版） -->
+                <div class="resources-upload-area compact" onclick="triggerLessonPlanUpload()" ondrop="handleLessonPlanDrop(event)" ondragover="handleLessonPlanDragOver(event)" ondragleave="handleLessonPlanDragLeave(event)">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h3>上传教案文件</h3>
+                    <p>点击上传或拖拽文件到这里</p>
+                    <p class="upload-hint">支持 PDF、Word、PPT 等格式</p>
+                    <button class="btn btn-primary" onclick="event.stopPropagation(); uploadFile('lessonPlan');">
+                        <i class="fas fa-plus"></i> 选择文件上传
+                    </button>
+                </div>
+                
+                <!-- 搜索和筛选工具栏 -->
+                <div class="resources-toolbar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="lessonPlanSearch" placeholder="搜索教案..." oninput="filterLessonPlans()">
+                        <button class="clear-search" id="clearLessonPlanSearchBtn" onclick="clearLessonPlanSearch()" style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="file-filters">
+                        <button class="filter-btn active" data-filter="all" onclick="filterLessonPlansByType('all')">
+                            <i class="fas fa-th"></i> 全部
+                        </button>
+                        <button class="filter-btn" data-filter="pdf" onclick="filterLessonPlansByType('pdf')">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                        <button class="filter-btn" data-filter="document" onclick="filterLessonPlansByType('document')">
+                            <i class="fas fa-file-word"></i> Word
+                        </button>
+                        <button class="filter-btn" data-filter="ppt" onclick="filterLessonPlansByType('ppt')">
+                            <i class="fas fa-file-powerpoint"></i> PPT
                         </button>
                     </div>
                 </div>
                 
-                <div class="file-management">
-                    <!-- 显示方式切换 -->
-                    <div class="view-toggle" style="display: flex; gap: 12px; padding: 20px; background: white; border-bottom: 1px solid #e5e7eb; align-items: center;">
-                        <span style="font-weight: 500; color: #374151; margin-right: 8px;">显示方式：</span>
-                        <button class="btn btn-secondary active" id="toggle-lesson-plan-weekly" onclick="switchLessonPlanView('weekly')">
-                            <i class="fas fa-calendar-week"></i> 按教学周
-                        </button>
-                        <button class="btn btn-secondary" id="toggle-lesson-plan-category" onclick="switchLessonPlanView('category')">
-                            <i class="fas fa-folder"></i> 按类型
-                        </button>
-                    </div>
-                    
-                    <!-- 按教学周视图 -->
-                    <div id="lesson-plan-weekly-view" class="textbook-view active">
-                        <div class="week-navigation" style="padding: 20px; background: white; border-bottom: 1px solid #e5e7eb;">
-                            <button class="btn btn-secondary btn-sm" onclick="previousLessonPlanWeek()">
-                                <i class="fas fa-chevron-left"></i> 上一周
-                            </button>
-                            <h3 id="current-lesson-plan-week-display" style="display: inline-block; margin: 0 20px; font-size: 18px; color: #1f2937;">第1周</h3>
-                            <button class="btn btn-secondary btn-sm" onclick="nextLessonPlanWeek()">
-                                下一周 <i class="fas fa-chevron-right"></i>
-                            </button>
-                            <div class="week-jump" style="margin-left: 20px; display: inline-flex; align-items: center; gap: 8px;">
-                                <input type="number" id="lesson-plan-week-jump-input" min="1" max="16" placeholder="周数" onkeypress="handleLessonPlanWeekJumpKeyPress(event)" style="width: 60px; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
-                                <button class="btn btn-primary btn-sm" onclick="jumpToLessonPlanWeek()" style="padding: 8px 16px;">
-                                    <i class="fas fa-arrow-right"></i> 跳转
-                                </button>
-                            </div>
-                        </div>
-                        <div id="lesson-plan-weekly-content" class="file-list-content">
-                            <!-- 内容将通过JavaScript动态生成 -->
-                        </div>
-                    </div>
-                    
-                    <!-- 按类型视图 -->
-                    <div id="lesson-plan-category-view" class="textbook-view" style="display: none;">
-                        <div class="file-filters" style="padding: 20px; background: white; border-bottom: 1px solid #e5e7eb;">
-                            <button class="btn btn-secondary active" onclick="filterLessonPlanFiles('all')">全部</button>
-                            <button class="btn btn-secondary" onclick="filterLessonPlanFiles('docx')">Word</button>
-                            <button class="btn btn-secondary" onclick="filterLessonPlanFiles('ppt')">PPT</button>
-                            <button class="btn btn-secondary" onclick="filterLessonPlanFiles('pdf')">PDF</button>
-                        </div>
-                        <div id="lesson-plan-category-content" class="file-list-content">
-                            <!-- 内容将通过JavaScript动态生成 -->
-                        </div>
+                <!-- 文件列表区域 -->
+                <div class="resources-content">
+                    <div class="file-list" id="lessonPlanFileList">
+                        <!-- 文件列表将通过JavaScript从API动态加载 -->
                     </div>
                 </div>
             </section>
@@ -1130,136 +1031,84 @@
             <!-- 资源页面 -->
             <section id="resources" class="content-section">
                 <div class="section-header">
-                    <h2><i class="fas fa-folder"></i> 个人知识库</h2>
-                    <div class="section-actions">
-                        <button class="btn btn-primary" onclick="uploadFile('resource')">
-                            <i class="fas fa-upload"></i> 上传资源
+                    <div>
+                        <h2><i class="fas fa-folder-open"></i> 个人知识库</h2>
+                        <p class="section-subtitle">管理您的学习资源，建立个人知识库</p>
+                    </div>
+                    <div class="section-header-search">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="resourceSearch" placeholder="搜索文件..." oninput="filterResources()">
+                            <button class="clear-search" id="clearSearchBtn" onclick="clearResourceSearch()" style="display: none;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 统计信息卡片 -->
+                <div class="resources-stats" id="resourcesStats">
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-file">
+                            <i class="fas fa-file"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="totalFilesCount">0</div>
+                            <div class="stat-label">总文件数</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-storage">
+                            <i class="fas fa-hdd"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="totalSize">0</div>
+                            <div class="stat-label">总存储量</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 上传区域（缩小版） -->
+                <div class="resources-upload-area compact" onclick="triggerResourceUpload()" ondrop="handleResourceDrop(event)" ondragover="handleResourceDragOver(event)" ondragleave="handleResourceDragLeave(event)">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h3>上传文件到知识库</h3>
+                    <p>点击上传或拖拽文件到这里</p>
+                    <p class="upload-hint">支持 PDF、Word、图片、视频、音频等格式</p>
+                    <button class="btn btn-primary" onclick="event.stopPropagation(); uploadFile('resource');">
+                        <i class="fas fa-plus"></i> 选择文件上传
+                    </button>
+                </div>
+                
+                <!-- 筛选工具栏 -->
+                <div class="resources-toolbar">
+                    <div class="file-filters">
+                        <button class="filter-btn active" data-filter="all" onclick="filterResourcesByType('all')">
+                            <i class="fas fa-th"></i> 全部
+                        </button>
+                        <button class="filter-btn" data-filter="pdf" onclick="filterResourcesByType('pdf')">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                        <button class="filter-btn" data-filter="image" onclick="filterResourcesByType('image')">
+                            <i class="fas fa-image"></i> 图片
+                        </button>
+                        <button class="filter-btn" data-filter="video" onclick="filterResourcesByType('video')">
+                            <i class="fas fa-video"></i> 视频
+                        </button>
+                        <button class="filter-btn" data-filter="audio" onclick="filterResourcesByType('audio')">
+                            <i class="fas fa-music"></i> 音频
+                        </button>
+                        <button class="filter-btn" data-filter="document" onclick="filterResourcesByType('document')">
+                            <i class="fas fa-file-word"></i> 文档
                         </button>
                     </div>
                 </div>
                 
-                <div class="file-management">
-                    <div class="file-filters">
-                        <button class="btn btn-secondary active" onclick="filterFiles('all')">全部</button>
-                        <button class="btn btn-secondary" onclick="filterFiles('video')">视频</button>
-                        <button class="btn btn-secondary" onclick="filterFiles('image')">图片</button>
-                        <button class="btn btn-secondary" onclick="filterFiles('audio')">音频</button>
-                    </div>
-                    
-                    <div class="file-list">
-                        <!-- 文件列表将通过JavaScript动态生成 -->
-                        <div class="file-list-header">
-                            <div class="file-name">文件名</div>
-                            <div class="file-type">类型</div>
-                            <div class="file-size">大小</div>
-                            <div class="file-date">上传时间</div>
-                            <div class="file-actions-header">操作</div>
-                        </div>
-                        <!-- 假数据已移除，将动态加载 -->
-                        <!--
-                        <div class="file-list-item">
-                            <div class="file-name">
-                                <div class="file-details">
-                                    <h4>定语从句讲解视频</h4>
-                                    <div class="file-tags">
-                                        <span class="tag">视频</span>
-                                        <span class="tag">定语从句</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="file-type">MP4</div>
-                            <div class="file-size">125MB</div>
-                            <div class="file-date">2024-01-22</div>
-                            <div class="file-actions">
-                                <button class="btn btn-primary btn-sm">
-                                    播放
-                                </button>
-                                <button class="btn btn-secondary btn-sm">
-                                    下载
-                                </button>
-                                <button class="btn btn-danger btn-sm">
-                                    删除
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="file-list-item">
-                            <div class="file-name">
-                                <div class="file-details">
-                                    <h4>语音连读图解</h4>
-                                    <div class="file-tags">
-                                        <span class="tag">图片</span>
-                                        <span class="tag">语音</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="file-type">PNG</div>
-                            <div class="file-size">2.1MB</div>
-                            <div class="file-date">2024-01-19</div>
-                            <div class="file-actions">
-                                <button class="btn btn-primary btn-sm">
-                                    查看
-                                </button>
-                                <button class="btn btn-secondary btn-sm">
-                                    下载
-                                </button>
-                                <button class="btn btn-danger btn-sm">
-                                    删除
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="file-list-item">
-                            <div class="file-name">
-                                <div class="file-details">
-                                    <h4>英语听力材料</h4>
-                                    <div class="file-tags">
-                                        <span class="tag">音频</span>
-                                        <span class="tag">英语</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="file-type">MP3</div>
-                            <div class="file-size">15.6MB</div>
-                            <div class="file-date">2024-01-17</div>
-                            <div class="file-actions">
-                                <button class="btn btn-primary btn-sm">
-                                    播放
-                                </button>
-                                <button class="btn btn-secondary btn-sm">
-                                    下载
-                                </button>
-                                <button class="btn btn-danger btn-sm">
-                                    删除
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="file-list-item">
-                            <div class="file-name">
-                                <div class="file-details">
-                                    <h4>词汇练习包</h4>
-                                    <div class="file-tags">
-                                        <span class="tag">压缩包</span>
-                                        <span class="tag">词汇</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="file-type">ZIP</div>
-                            <div class="file-size">8.3MB</div>
-                            <div class="file-date">2024-01-14</div>
-                            <div class="file-actions">
-                                <button class="btn btn-primary btn-sm">
-                                    解压
-                                </button>
-                                <button class="btn btn-secondary btn-sm">
-                                    下载
-                                </button>
-                                <button class="btn btn-danger btn-sm">
-                                    删除
-                                </button>
-                            </div>
-                        </div>
+                <!-- 文件列表区域 -->
+                <div class="resources-content">
+                    <div class="file-list" id="resourceFileList">
+                        <!-- 文件列表将通过JavaScript从API动态加载 -->
                     </div>
                 </div>
             </section>
@@ -1301,48 +1150,6 @@
                             <h3>完成课程</h3>
                             <div class="progress-number">3</div>
                             <div class="progress-label">门</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 学习资源 -->
-            <section id="resources" class="content-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-folder"></i> 学习资源</h2>
-                </div>
-                
-                <div class="resources-grid">
-                    <div class="resource-card">
-                        <div class="resource-icon">
-                            <i class="fas fa-file-pdf"></i>
-                        </div>
-                        <div class="resource-content">
-                            <h3>学习资料</h3>
-                            <p>PDF文档、课件、笔记</p>
-                            <div class="resource-count">25个文件</div>
-                        </div>
-                    </div>
-                    
-                    <div class="resource-card">
-                        <div class="resource-icon">
-                            <i class="fas fa-video"></i>
-                        </div>
-                        <div class="resource-content">
-                            <h3>视频教程</h3>
-                            <p>在线视频课程</p>
-                            <div class="resource-count">12个视频</div>
-                        </div>
-                    </div>
-                    
-                    <div class="resource-card">
-                        <div class="resource-icon">
-                            <i class="fas fa-link"></i>
-                        </div>
-                        <div class="resource-content">
-                            <h3>外部链接</h3>
-                            <p>有用的学习网站</p>
-                            <div class="resource-count">8个链接</div>
                         </div>
                     </div>
                 </div>

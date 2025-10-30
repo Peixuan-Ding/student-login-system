@@ -1,3 +1,101 @@
+.tutor-header {
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* 导师欢迎区域 */
+.tutor-hero {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 40px 30px;
+    background: linear-gradient(135deg, #f8fbff 0%, #f5f7ff 100%);
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+}
+
+.tutor-hero-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef2ff;
+    color: #667eea;
+    font-size: 36px;
+}
+
+.tutor-title {
+    margin: 0 0 6px 0;
+    font-size: 22px;
+    color: #1f2937;
+}
+
+.tutor-subtitle {
+    margin: 0 0 16px 0;
+    color: #6b7280;
+}
+
+.tutor-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.tutor-actions .btn-lg {
+    padding: 12px 20px;
+    font-size: 15px;
+}
+
+/* 新建/选择导师弹窗样式优化 */
+#createTutorModal .modal-content,
+#existingTutorModal .modal-content {
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+#createTutorModal .modal-header i,
+#existingTutorModal .modal-header i {
+    color: #667eea;
+}
+
+#createTutorModal .form-grid .form-row,
+#existingTutorModal .form-grid .form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+#createTutorModal input,
+#createTutorModal textarea,
+#existingTutorModal input,
+#existingTutorModal textarea {
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+}
+
+#createTutorModal input:focus,
+#createTutorModal textarea:focus,
+#existingTutorModal input:focus,
+#existingTutorModal textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+#existingTutorModal #tutorList .file-list-item.active {
+    background: #eef2ff;
+    border-left: 3px solid #667eea;
+}
+
+@media (max-width: 768px) {
+    .tutor-hero { padding: 24px 16px; flex-direction: column; align-items: flex-start; }
+    .tutor-actions { flex-direction: column; width: 100%; }
+    .tutor-actions .btn-lg { width: 100%; }
+}
 /* 全局样式重置 */
 * {
     margin: 0;
@@ -304,17 +402,6 @@ body {
     display: block;
 }
 
-/* 教材页面专用样式 */
-#textbooks {
-    padding: 24px;
-}
-
-#textbooks .section-header {
-    padding: 12px 20px;
-    margin-bottom: 0;
-    border-bottom: 1px solid #e5e7eb;
-    background: white;
-}
 
 /* 聊天界面 */
 .chat-container {
@@ -846,6 +933,63 @@ body {
     font-size: 18px;
 }
 
+/* 个人知识库标题区域的搜索框 */
+.section-header-search {
+    flex-shrink: 0;
+}
+
+.section-header-search .search-box {
+    min-width: 300px;
+    max-width: 400px;
+    position: relative;
+}
+
+.section-header-search .search-box i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 16px;
+    z-index: 1;
+}
+
+.section-header-search .search-box input {
+    width: 100%;
+    padding: 10px 40px 10px 42px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.section-header-search .search-box input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.section-header-search .clear-search {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+.section-header-search .clear-search:hover {
+    color: #667eea;
+    background: #f0f4ff;
+}
+
 /* 课程网格 */
 .courses-grid {
     padding: 30px;
@@ -1285,7 +1429,7 @@ body {
 /* 日历容器样式 */
 .calendar-container {
     width: 100%;
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
 }
 
@@ -1307,11 +1451,29 @@ body {
     padding: 8px;
 }
 
+/* 左右布局 */
+.calendar-split {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.calendar-main {
+    flex: 1;
+    min-width: 0;
+    max-width: 620px;
+}
+
+.calendar-side {
+    width: 260px;
+    flex-shrink: 0;
+}
+
 /* 日历样式 */
 .calendar {
     background: #ffffff;
     border-radius: 0;
-    padding: 18px;
+    padding: 12px;
     border: 1px solid #e2e8f0;
 }
 
@@ -1324,6 +1486,28 @@ body {
     border-radius: 0;
     padding: 12px 16px;
 }
+
+/* 日历图例 */
+.calendar-legend {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 12px;
+    color: #6b7280;
+    margin: 8px 0 12px 0;
+}
+
+.calendar-legend .legend-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.calendar-legend .legend-checked { background: #10b981; }
+.calendar-legend .legend-today { background: #3b82f6; }
+.calendar-legend .legend-empty { background: #e5e7eb; }
 
 .calendar-header h4 {
     color: #667eea;
@@ -1354,7 +1538,7 @@ body {
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
+    gap: 6px;
 }
 
 .calendar-day-header {
@@ -1374,7 +1558,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     border-radius: 10px;
     cursor: pointer;
@@ -1443,16 +1627,13 @@ body {
 /* 日历统计样式 */
 .calendar-stats {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 12px;
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid #e5e7eb;
 }
 
 .calendar-stats .stat-item {
-    text-align: center;
-    padding: 16px;
+    text-align: left;
+    padding: 14px;
     background: #ffffff;
     border-radius: 0;
     border: 1px solid #e5e7eb;
@@ -1463,7 +1644,7 @@ body {
 
 .calendar-stats .stat-number {
     display: block;
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 800;
     color: #10b981;
     margin-bottom: 6px;
@@ -1475,6 +1656,21 @@ body {
     color: #6b7280;
     font-weight: 600;
     letter-spacing: 0.3px;
+}
+
+/* 统计卡片内进度条 */
+.stat-progress {
+    width: 100%;
+    height: 8px;
+    background: #f3f4f6;
+    border-radius: 9999px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.stat-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #67e8f9 0%, #3b82f6 100%);
 }
 
 /* 学习日志样式 */
@@ -2400,9 +2596,11 @@ html {
     .profile-left, .profile-right {
         padding: 20px 16px;
     }
+    .calendar-split { flex-direction: column; }
+    .calendar-side { width: 100%; }
     
     .calendar-stats {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
         gap: 12px;
     }
     
@@ -5022,5 +5220,449 @@ textarea.form-control {
     .modern-input-wrapper {
         margin: 12px 16px;
         padding: 10px 12px;
+    }
+}
+
+/* ========== 个人知识库页面样式 ========== */
+
+/* 页面标题和副标题 */
+.section-subtitle {
+    font-size: 14px;
+    color: #6b7280;
+    margin-top: 8px;
+    font-weight: 400;
+}
+
+/* 统计信息卡片 - 扁平化设计，仅2个卡片横向拉长 */
+.resources-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.resources-stats .stat-card {
+    background: white;
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #e5e7eb;
+    transition: background-color 0.2s ease;
+}
+
+.resources-stats .stat-card:hover {
+    background: #f9fafb;
+}
+
+.resources-stats .stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+/* 扁平化图标背景色 - 使用纯色替代渐变 */
+.resources-stats .stat-icon-file {
+    background: #667eea;
+}
+
+.resources-stats .stat-icon-storage {
+    background: #f5576c;
+}
+
+.resources-stats .stat-icon-image {
+    background: #4facfe;
+}
+
+.resources-stats .stat-icon-video {
+    background: #38f9d7;
+}
+
+.resources-stats .stat-content {
+    flex: 1;
+}
+
+.resources-stats .stat-number {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1f2937;
+    line-height: 1.2;
+    margin-bottom: 2px;
+}
+
+.resources-stats .stat-label {
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 400;
+}
+
+/* 上传区域 */
+.resources-upload-area {
+    background: linear-gradient(135deg, #f0f4ff 0%, #f9fafb 100%);
+    border: 2px dashed #cbd5e1;
+    border-radius: 16px;
+    padding: 48px 24px;
+    text-align: center;
+    margin-bottom: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 缩小版上传区域（用于教材和教案页面） */
+.resources-upload-area.compact {
+    padding: 24px 20px;
+    margin-bottom: 20px;
+}
+
+.resources-upload-area.compact .upload-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+}
+
+.resources-upload-area.compact h3 {
+    font-size: 16px;
+    margin-bottom: 6px;
+}
+
+.resources-upload-area.compact p {
+    font-size: 13px;
+    margin-bottom: 3px;
+}
+
+.resources-upload-area.compact .upload-hint {
+    font-size: 11px;
+    margin-top: 6px;
+    margin-bottom: 12px;
+}
+
+.resources-upload-area.compact .btn {
+    padding: 8px 20px;
+    font-size: 14px;
+}
+
+.resources-upload-area:hover {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #e8edff 0%, #f0f4ff 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.resources-upload-area:active {
+    transform: translateY(0);
+}
+
+.upload-icon {
+    font-size: 64px;
+    color: #667eea;
+    margin-bottom: 16px;
+    opacity: 0.8;
+}
+
+.resources-upload-area h3 {
+    font-size: 20px;
+    color: #1f2937;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.resources-upload-area p {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.upload-hint {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 8px;
+    margin-bottom: 20px;
+}
+
+.resources-upload-area .btn-lg {
+    padding: 12px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(102, 126, 234, 0.25);
+}
+
+/* 筛选工具栏 */
+.resources-toolbar {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.resources-toolbar .search-box {
+    flex: 1;
+    min-width: 250px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.resources-toolbar .search-box i {
+    position: absolute;
+    left: 14px;
+    color: #9ca3af;
+    font-size: 16px;
+    z-index: 1;
+}
+
+.resources-toolbar .search-box input {
+    width: 100%;
+    padding: 10px 40px 10px 42px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background: #f9fafb;
+}
+
+.resources-toolbar .search-box input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.resources-toolbar .clear-search {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.resources-toolbar .clear-search:hover {
+    color: #667eea;
+    background: #f0f4ff;
+}
+
+.resources-toolbar .file-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+    background: #f0f4ff;
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
+.filter-btn i {
+    font-size: 14px;
+}
+
+/* 文件列表内容区域 */
+.resources-content {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    min-height: 400px;
+    max-height: calc(100vh - 500px);
+    display: flex;
+    flex-direction: column;
+}
+
+/* 确保 resources-content 内的 file-list 只在内容超出时显示滚动条 */
+.resources-content > .file-list {
+    background: white;
+    border-radius: 0;
+    border: none;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+}
+
+.resources-content > .file-list .file-list-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #f9fafb;
+}
+
+#resourceFileList {
+    background: white;
+    min-height: 400px;
+    max-height: calc(100vh - 500px);
+    overflow-y: auto;
+}
+
+#resourceFileList .file-list-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #f9fafb;
+}
+
+/* 空状态 */
+.empty-resource-state {
+    padding: 80px 20px;
+    text-align: center;
+    color: #6b7280;
+}
+
+.empty-resource-state i {
+    font-size: 64px;
+    color: #d1d5db;
+    margin-bottom: 24px;
+    opacity: 0.5;
+}
+
+.empty-resource-state p {
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: #374151;
+    font-weight: 500;
+}
+
+.empty-resource-state .empty-hint {
+    font-size: 14px;
+    color: #9ca3af;
+    font-weight: 400;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .resources-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .resources-stats .stat-card {
+        padding: 12px;
+        gap: 10px;
+    }
+    
+    .resources-stats .stat-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+    
+    .resources-stats .stat-number {
+        font-size: 20px;
+    }
+    
+    .resources-stats .stat-label {
+        font-size: 11px;
+    }
+    
+    .resources-upload-area {
+        padding: 32px 16px;
+    }
+    
+    .upload-icon {
+        font-size: 48px;
+    }
+    
+    /* 响应式：标题区域的搜索框 */
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .section-header-search {
+        width: 100%;
+    }
+    
+    .section-header-search .search-box {
+        min-width: 100%;
+        max-width: 100%;
+    }
+    
+    .resources-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .resources-toolbar .file-filters {
+        justify-content: center;
+    }
+    
+    .resources-stats .stat-card {
+        padding: 10px 12px;
+        gap: 8px;
+    }
+    
+    .resources-stats .stat-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+    
+    .resources-stats .stat-number {
+        font-size: 18px;
+    }
+    
+    .resources-stats .stat-label {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .resources-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .filter-btn {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+    
+    .upload-icon {
+        font-size: 40px;
+    }
+    
+    .resources-upload-area h3 {
+        font-size: 18px;
     }
 }

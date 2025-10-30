@@ -9,7 +9,7 @@ const DB_FILES = {
     materials: path.join(DB_DIR, 'materials.json'),
     lessonPlans: path.join(DB_DIR, 'lesson-plans.json'),
     resources: path.join(DB_DIR, 'resources.json'),
-    chatSessions: path.join(DB_DIR, 'chat-sessions.json')
+        tutors: path.join(DB_DIR, 'tutors.json')
 };
 
 // 数据库操作辅助函数

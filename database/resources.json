@@ -1,4 +1,17 @@
 {
-  "resources": []
+  "resources": [
+    {
+      "id": "res_001",
+      "title": "writing skills.pdf",
+      "name": "writing skills.pdf",
+      "fileType": "pdf",
+      "iconClass": "file-pdf",
+      "size": "1.59 MB",
+      "filePath": "D:\\Ding\\STT\\uploads\\tmp\\1761846134037-344239488.pdf",
+      "week": 1,
+      "subject": "",
+      "tags": [],
+      "uploadDate": "2025-10-30T17:42:14.347Z"
+    }
+  ]
 }
-

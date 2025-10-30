@@ -4,44 +4,49 @@
 
 ---
 
-## 🚀 快速部署到Ubuntu云服务器
+## ⚡ 一键部署（极简示例）
 
-### 方式1: 一键安装（推荐）
-
+Linux/Mac：
 ```bash
-# 1. SSH连接到服务器
-ssh root@你的服务器IP
-
-# 2. 上传项目（3种方式任选其一）
-# 方式A: Git克隆
-git clone <你的仓库地址>
-cd STT-platform
-
-# 方式B: SCP上传（本地执行）
-scp -r 项目文件夹 root@服务器IP:/root/STT-platform
-
-# 方式C: 使用WinSCP等FTP工具上传
-
-# 3. 进入项目目录
-cd ~/STT-platform
-
-# 4. 一键安装环境
-sudo bash install-ubuntu.sh
-
-# 5. 配置API密钥
-nano config.json
-# 填入您的AI服务API密钥
-
-# 6. 安装依赖并启动
-npm install
-pm2 start ecosystem.config.js --env production
-pm2 startup
-pm2 save
+./deploy.sh --mode local --host 你的服务器IP --user root --path /root/STT-platform --port 3000 --app STT-Learning-Platform
 ```
 
-### 方式2: 手动安装
+Windows（PowerShell）：
+```powershell
+./deploy.ps1 -Mode local -RemoteHost 你的服务器IP -RemoteUser root -RemotePath /root/STT-platform -RemotePort 3000 -AppName STT-Learning-Platform
+```
 
-详细步骤请查看：[部署指南.md](./部署指南.md)
+更多参数说明见 `DEPLOYMENT.md`。
+
+## 🚀 快速部署（统一脚本）
+
+Linux/Mac（本地 → 服务器）：
+```bash
+./deploy.sh --mode local --host 你的服务器IP --user root --path /root/STT-platform --port 3000 --app STT-Learning-Platform
+```
+
+Windows（PowerShell，本地 → 服务器）：
+```powershell
+./deploy.ps1 -Mode local -RemoteHost 你的服务器IP -RemoteUser root -RemotePath /root/STT-platform -RemotePort 3000 -AppName STT-Learning-Platform
+```
+
+服务器内自更新（不上传代码）：
+```bash
+# Linux/Mac（在服务器上执行）
+./deploy.sh --mode server --path /root/STT-platform --app STT-Learning-Platform
+```
+```powershell
+# Windows（在服务器上执行）
+./deploy.ps1 -Mode server -RemotePath /root/STT-platform -AppName STT-Learning-Platform
+```
+
+更多说明见：`DEPLOYMENT.md`
+
+---
+
+## 📥 手动安装
+
+详细步骤请查看：[docs/部署指南.md](./docs/部署指南.md) - 包含完整的本地启动和服务器部署说明
 
 ---
 
@@ -77,8 +82,8 @@ pm2 save
 
 ## 📖 详细文档
 
-- **部署指南**: [部署指南.md](./部署指南.md) - 详细的部署步骤和故障排查
-- **完整文档**: [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - 完整的部署和配置文档
+- **📘 部署指南（统一版）**: [docs/部署指南.md](./docs/部署指南.md) - 本地启动、统一部署脚本与排错
+- **🗃️ 数据库说明**: [docs/数据库说明.md](./docs/数据库说明.md) - 数据文件结构、接口映射与示例
 
 ---
 
@@ -116,9 +121,9 @@ pm2 stop STT-Learning-Platform
 ├── config.json            # API配置文件
 ├── package.json           # 项目依赖
 ├── ecosystem.config.js    # PM2配置
-├── install-ubuntu.sh      # Ubuntu环境安装脚本
-├── deploy.sh              # 部署脚本
-├── setup-nginx.sh         # Nginx配置脚本
+├── install-ubuntu.sh      # Ubuntu环境安装脚本（可选）
+├── deploy.sh              # 统一部署脚本（Linux/Mac）
+├── deploy.ps1             # 统一部署脚本（Windows）
 ├── public/                # 前端文件
 ├── routes/                # API路由
 ├── middleware/            # 中间件
@@ -174,8 +179,7 @@ cat config.json
 ```
 
 ### 📋 故障排查文档
-- 🔧 **[故障排查.md](./故障排查.md)** - 完整的诊断流程和解决方案
-- 📖 [部署指南.md](./部署指南.md) - 详细的部署步骤
+- 📖 [docs/部署指南.md](./docs/部署指南.md) - 统一部署与故障排查
 
 ---
 
@@ -211,5 +215,6 @@ MIT
 ## 📞 获取帮助
 
 详细部署文档：
-- [部署指南.md](./部署指南.md)
-- [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
+- [docs/部署指南.md](./docs/部署指南.md) - **完整部署指南（推荐）** - 包含本地启动和服务器部署
+- [DEPLOYMENT.md](./DEPLOYMENT.md) - 服务器部署说明
+- [docs/快速部署-云服务器.md](./docs/快速部署-云服务器.md) - 快速部署指南

@@ -1,6 +1,15 @@
 const fs = require('fs').promises;
 const path = require('path');
-const pdfParse = require('pdf-parse');
+
+// pdf-parse 2.4.5 是 ES 模块，需要通过兼容方式导入
+// PDFParse 是一个类，需要用 new 实例化，然后调用 getText() 方法
+const pdfModule = require('pdf-parse');
+const PDFParse = pdfModule.PDFParse;
+
+if (!PDFParse || typeof PDFParse !== 'function') {
+    throw new Error('pdf-parse 模块未正确导入，找不到 PDFParse 类');
+}
+
 const mammoth = require('mammoth');
 
 /**
@@ -16,8 +25,14 @@ async function extractTextFromFile(filePath, mimeType) {
         // PDF文件
         if (mimeType === 'application/pdf' || ext === '.pdf') {
             const dataBuffer = await fs.readFile(filePath);
-            const data = await pdfParse(dataBuffer);
-            return { success: true, content: data.text };
+            // PDFParse 是一个类，需要用 new 实例化
+            // 需要将 Node.js Buffer 转换为 Uint8Array
+            const uint8Array = new Uint8Array(dataBuffer);
+            const pdfParser = new PDFParse({ data: uint8Array });
+            // getText() 返回一个 Promise<TextResult>，TextResult 包含 text 属性
+            const textResult = await pdfParser.getText();
+            const text = textResult.text || '';
+            return { success: true, content: text };
         }
         
         // Word文档
@@ -40,10 +55,17 @@ async function extractTextFromFile(filePath, mimeType) {
         }
         
         return { success: false, content: '', error: '不支持的文件类型' };
-    } catch (error) {
-        console.error('提取文件文本内容失败:', error);
-        return { success: false, content: '', error: error.message };
-    }
+        } catch (error) {
+            console.error('提取文件文本内容失败:', error);
+            console.error('错误详情:', {
+                filePath,
+                mimeType,
+                errorName: error.name,
+                errorMessage: error.message,
+                errorStack: error.stack?.substring(0, 200)
+            });
+            return { success: false, content: '', error: error.message || '文件处理失败' };
+        }
 }
 
 /**
@@ -54,24 +76,38 @@ async function extractTextFromFile(filePath, mimeType) {
 async function extractTextFromFiles(files) {
     const results = [];
     let totalText = '';
+    const errors = [];
     
     for (const file of files) {
-        const result = await extractTextFromFile(file.path, file.mimeType);
-        if (result.success) {
-            results.push({
-                name: file.name,
-                content: result.content
-            });
-            totalText += `\n\n===== 文件: ${file.name} =====\n${result.content}`;
-        } else {
-            console.warn(`文件 ${file.name} 处理失败: ${result.error}`);
+        try {
+            const result = await extractTextFromFile(file.path, file.mimeType);
+            if (result.success) {
+                results.push({
+                    name: file.name,
+                    content: result.content
+                });
+                totalText += `\n\n===== 文件: ${file.name} =====\n${result.content}`;
+            } else {
+                const errorMsg = result.error || '未知错误';
+                console.warn(`文件 ${file.name} 处理失败: ${errorMsg}`);
+                errors.push({ name: file.name, error: errorMsg });
+            }
+        } catch (error) {
+            const errorMsg = error.message || '处理文件时发生异常';
+            console.error(`文件 ${file.name} 处理异常:`, error);
+            errors.push({ name: file.name, error: errorMsg });
         }
     }
+    
+    // 不再抛出错误，即使所有文件处理失败也返回结果
+    // 这样可以让文件上传成功，只是文本提取失败
+    // 用户仍然可以保存文件信息到数据库
     
     return {
         success: true,
         contents: results,
-        totalText: totalText.trim()
+        totalText: totalText.trim(),
+        errors: errors.length > 0 ? errors : undefined
     };
 }
 
